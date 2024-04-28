@@ -1,5 +1,11 @@
+
 const pickedYears = [1993]
+
 const getRandomYear = (min, max) => Math.round(Math.random() * (max - min) + min)
+const getRandomColor = () => Math.round(Math.random() * (360 - 0))
+
+const randomColor = `hsl(${getRandomColor()} 100% 69%)`
+document.documentElement.style.setProperty('--glow-color', randomColor);
 
 function getMovieYear(minYear, maxYear) {
   const nbOfYears = maxYear - minYear + 1

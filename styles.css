@@ -26,7 +26,8 @@ body {
   color: white;
 }
 
-div {
+.get-year-wrapper,
+.result-display-wrapper {
   display: flex;
   flex-direction: column;
   gap: 20px;
