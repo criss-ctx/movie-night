@@ -17,6 +17,7 @@ body {
 
 body {
   min-height: 100vh;
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -33,9 +34,10 @@ div {
   margin-bottom: 100px;
 }
 
-/* h1 {
-  color: white;
-} */
+h1 {
+  margin: 24px 8px;
+  text-align: center;
+}
 
 .result-display-wrapper {
   position: relative;
