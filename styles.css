@@ -36,6 +36,12 @@ body {
 }
 
 h1 {
+  font-size: 22px;
+}
+h2 {
+  font-size: 18px;
+}
+h1, h2 {
   margin: 24px 8px;
   text-align: center;
 }
@@ -78,7 +84,7 @@ h1 {
 .glowing-btn {
   position: relative;
   color: var(--glow-color);
-  cursor: pointer;
+  /* cursor: pointer; */
   padding: 0.35em 1em;
   border: 0.15em solid var(--glow-color);
   border-radius: 0.45em;
@@ -96,6 +102,12 @@ h1 {
   box-shadow: inset 0px 0px 0.5em 0px var(--glow-color),
     0px 0px 0.5em 0px var(--glow-color);
   animation: border-flicker 2s linear infinite;
+}
+
+@media (hover: hover), (-ms-high-contrast:none) {
+  .glowing-btn:hover {
+    cursor: pointer;
+  }
 }
 
 .glowing-txt {
@@ -131,10 +143,11 @@ h1 {
 .glowing-btn::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  border-radius: 0.20em;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
   opacity: 0;
   z-index: -1;
   background-color: var(--glow-color);
@@ -269,4 +282,9 @@ h1 {
   .glowing-btn{
     font-size: 1em;
   }
+}
+
+/* Splide style */
+.splide__list {
+  max-width: 100vw;
 }

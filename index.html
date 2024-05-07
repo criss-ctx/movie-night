@@ -4,11 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" type="text/css" href="styles.css" />
+  <script src="
+  https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js
+  "></script>
+  <link href="
+  https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css
+  " rel="stylesheet">
   <title>Movie Night!</title>
 </head>
-<script src="myscripts.js"></script>
 <body>
-  <div class="main-container">
+  <!-- <div class="main-container">
     <div class="get-year-wrapper">
       <h1>Année du film de la prochaine séance:</h1>
       <button id='cta' class='glowing-btn' onclick="getMovieYear(1970, 2023)"><span class='glowing-txt'>G<span class='faulty-letter'>O</span></span></button>
@@ -16,7 +21,36 @@
     <div class="result-display-wrapper">
       <p class="result-display">xxxx</p>
     </div>
+    
+  </div> -->
 
-  </div>
+  <section class="splide" aria-labelledby="carousel-heading">
+    <h1>It's Movie Nigth!</h1>
+  
+    <div class="splide__track">
+      <div class="splide__list">
+        <div class="splide__slide">
+          <div class="get-year-wrapper">
+            <h2>Année du film de la prochaine séance:</h2>
+            <button id='cta' class='glowing-btn' onclick="getMovieYear(1970, 2023)"><span class='glowing-txt'>G<span class='faulty-letter'>O</span></span></button>
+          </div>
+          <div class="result-display-wrapper">
+            <p class="result-display">xxxx</p>
+          </div>
+        </div>
+        <div class="splide__slide">Slide 01</div>
+        <div class="splide__slide">Slide 02</div>
+        <div class="splide__slide">Slide 03</div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    new Splide( '.splide', {
+      type: "loop",
+      arrows: false,
+    } ).mount();
+  </script>
+  <script src="myscripts.js"></script>
 </body>
 </html>
