@@ -62,13 +62,56 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
   updateAuthUI()
 })
 
+// --- Profiles ---
+
+let profiles = []
+let selectedPickerProfileId = null
+
+async function loadProfiles() {
+  const { data, error } = await client.from('profiles').select('*').order('id')
+  if (error) { console.error(error); return }
+  profiles = data
+  renderPickerProfiles()
+  renderFormProfileSelect()
+}
+
+function renderPickerProfiles() {
+  const el = document.getElementById('picker-profiles')
+  el.innerHTML = profiles.map(p =>
+    `<button class="profile-btn${selectedPickerProfileId === p.id ? ' profile-btn--selected' : ''}" data-profile-id="${p.id}">${escapeHtml(p.name)}</button>`
+  ).join('')
+}
+
+function renderFormProfileSelect() {
+  const options = '<option value="">— Choisir —</option>' +
+    profiles.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')
+  document.querySelectorAll('#picked-by').forEach(select => {
+    select.innerHTML = options
+    if (selectedPickerProfileId) select.value = selectedPickerProfileId
+  })
+}
+
+document.getElementById('picker-profiles').addEventListener('click', (e) => {
+  if (!e.target.matches('.profile-btn')) return
+  selectedPickerProfileId = Number(e.target.dataset.profileId)
+  renderPickerProfiles()
+  renderFormProfileSelect()
+})
+
 // --- Journal ---
 
 async function loadJournal() {
-  const { data: entries, error } = await client.from('journal').select('*').order('watch_date')
+  const { data: entries, error } = await client.from('journal').select('*, profiles(name)').order('watch_date')
   if (error) { console.error(error); return }
   pickedYears = entries.map(e => Number(e.release_year))
+  updateLastChooser(entries)
   renderJournal(entries)
+}
+
+function updateLastChooser(entries) {
+  const last = entries[entries.length - 1]
+  document.getElementById('last-chooser').textContent =
+    last?.profiles?.name ? `Dernier choix : ${last.profiles.name}` : ''
 }
 
 let editingId = null
@@ -79,7 +122,9 @@ function renderJournal(entries) {
         ? `<div class="journal-entry journal-entry--editing" data-id="${e.id}">
             <input class="entry-edit-input" data-field="title" value="${escapeAttr(e.title)}" placeholder="Titre du film" />
             <input class="entry-edit-input" data-field="release_year" type="number" value="${e.release_year}" placeholder="Année de sortie" />
-            <input class="entry-edit-input" data-field="picked_by" value="${escapeAttr(e.picked_by)}" placeholder="Choisi par" />
+            <select class="entry-edit-input" data-field="profile_id">
+              ${profiles.map(p => `<option value="${p.id}"${String(e.profile_id) === String(p.id) ? ' selected' : ''}>${escapeHtml(p.name)}</option>`).join('')}
+            </select>
             <input class="entry-edit-input" data-field="watch_date" type="date" value="${escapeAttr(e.watch_date)}" />
             <div class="entry-actions">
               <button class="save-btn" data-id="${e.id}" aria-label="Enregistrer">&#10003;</button>
@@ -89,7 +134,7 @@ function renderJournal(entries) {
         : `<div class="journal-entry">
             <span class="entry-title">${escapeHtml(e.title)}</span>
             <span class="entry-year">${escapeHtml(String(e.release_year))}</span>
-            <span class="entry-meta">Choisi par ${escapeHtml(e.picked_by)} &middot; Vu le ${formatDate(e.watch_date)}</span>
+            <span class="entry-meta">Choisi par ${escapeHtml(e.profiles?.name ?? e.picked_by ?? '?')} &middot; Vu le ${formatDate(e.watch_date)}</span>
             <div class="entry-actions">
               <button class="edit-btn" data-id="${e.id}" aria-label="Modifier">&#9998;</button>
               <button class="delete-btn" data-id="${e.id}" aria-label="Supprimer">&times;</button>
@@ -120,12 +165,12 @@ document.addEventListener('submit', async (e) => {
   const entry = {
     title: form.querySelector('#movie-title').value.trim(),
     release_year: Number(form.querySelector('#release-year').value),
-    picked_by: form.querySelector('#picked-by').value.trim(),
+    profile_id: Number(form.querySelector('#picked-by').value),
     watch_date: form.querySelector('#watch-date').value,
   }
   await requireAuth(async () => {
     const { error } = await client.from('journal').insert(entry)
-    if (!error) { form.reset(); loadJournal() }
+    if (!error) { form.reset(); renderFormProfileSelect(); loadJournal() }
   })
 })
 
@@ -143,7 +188,10 @@ document.addEventListener('click', async (e) => {
     const card = e.target.closest('.journal-entry--editing')
     const updated = {}
     card.querySelectorAll('.entry-edit-input').forEach(input => {
-      updated[input.dataset.field] = input.value
+      const val = input.value
+      updated[input.dataset.field] = (input.type === 'number' || input.dataset.field === 'profile_id')
+        ? Number(val)
+        : val
     })
     await requireAuth(async () => {
       const { error } = await client.from('journal').update(updated).eq('id', id)
@@ -171,19 +219,47 @@ document.documentElement.style.setProperty('--glow-color', randomColor)
 
 function getMovieYear(minYear, maxYear) {
   const nbOfYears = maxYear - minYear + 1
-  const resultDisplayWrapper = document.querySelector('.result-display-wrapper')
   const resultDisplay = document.querySelector('.result-display')
 
-  let tempResult
-  while (!tempResult || pickedYears.includes(tempResult)) {
-    if (pickedYears.length === nbOfYears) tempResult = minYear - 1
-    else tempResult = getRandomYear(minYear, maxYear)
+  let year
+  while (!year || pickedYears.includes(year)) {
+    if (pickedYears.length === nbOfYears) year = minYear - 1
+    else year = getRandomYear(minYear, maxYear)
   }
 
-  resultDisplay.textContent = tempResult
-  resultDisplayWrapper.classList.remove('date-shown-a')
-  setTimeout(() => { resultDisplayWrapper.classList.add('date-shown-a') }, 500)
+  animateDigits(resultDisplay, year)
 }
 
+function animateDigits(el, year) {
+  const rollSpeedMs = 180          // how fast digits cycle
+  const firstDigitSettleMs = 2000  // delay before the 1st digit locks in
+  const delayPerDigitMs = 1500     // extra delay per subsequent digit
+
+  const digits = String(year).split('')
+  el.innerHTML = digits.map(() => `<span class="digit">0</span>`).join('')
+  const spans = el.querySelectorAll('.digit')
+
+  digits.forEach((finalDigit, i) => {
+    const settleAfterMs = firstDigitSettleMs + i * delayPerDigitMs
+    let elapsedMs = 0
+
+    const timer = setInterval(() => {
+      elapsedMs += rollSpeedMs
+      if (elapsedMs >= settleAfterMs) {
+        spans[i].textContent = finalDigit
+        spans[i].classList.add('settled')
+        clearInterval(timer)
+      } else {
+        spans[i].textContent = Math.floor(Math.random() * 10)
+      }
+    }, rollSpeedMs)
+  })
+}
+
+loadProfiles()
 loadJournal()
 updateAuthUI()
+
+document.getElementById('btn-tirage').addEventListener('click', () => {
+  getMovieYear(1970, new Date().getFullYear())
+})

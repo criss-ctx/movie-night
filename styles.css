@@ -204,27 +204,43 @@ body {
   .glowing-btn:hover::after            { opacity: 1; }
 }
 
+.profile-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.profile-btn {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  padding: 5px 14px;
+  border: 1px solid var(--border-mid);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms, box-shadow 150ms;
+}
+
+.profile-btn--selected {
+  border-color: var(--glow-color);
+  color: var(--text);
+  box-shadow: 0 0 8px var(--glow-color);
+}
+
+.last-chooser {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  margin: 0 0 20px;
+  min-height: 1em;
+}
+
 .result-display-wrapper {
   position: relative;
   padding: 16px 24px;
   margin-top: 48px;
-}
-
-.result-display-wrapper::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  width: 100%;
-  background: var(--bg);
-  top: 0;
-  bottom: 0;
-  border-radius: 0.45rem;
-  transition: width 0ms;
-}
-
-.result-display-wrapper.date-shown-a::after {
-  width: 0%;
-  transition: width 5000ms;
 }
 
 .result-display {
@@ -236,6 +252,17 @@ body {
   min-height: 70px;
   transform: translateX(0.12em);
   color: var(--text);
+}
+
+.result-display .digit {
+  display: inline-block;
+  opacity: 0.3;
+  transition: opacity 80ms;
+}
+
+.result-display .digit.settled {
+  opacity: 1;
+  text-shadow: 0 0 12px var(--glow-color), 0 0 30px var(--glow-color);
 }
 
 /* ============================================================
@@ -284,7 +311,8 @@ body {
   text-transform: uppercase;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   background: var(--surface);
   border: 1px solid var(--border-mid);
   border-radius: var(--r-sm);
@@ -298,7 +326,8 @@ body {
   transition: border-color 180ms, background 180ms;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   border-color: var(--border-strong);
   background: var(--surface-raised);
 }

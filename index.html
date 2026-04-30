@@ -45,11 +45,13 @@
         <!-- Slide 1 : Tirage -->
         <div class="splide__slide slide--picker">
           <p class="slide-label">Année du film<br>de la prochaine séance</p>
-          <button class="glowing-btn" onclick="getMovieYear(1970, 2023)">
+          <div id="picker-profiles" class="profile-selector"></div>
+          <p id="last-chooser" class="last-chooser"></p>
+          <button class="glowing-btn" id="btn-tirage">
             <span class="glowing-txt">G<span class="faulty-letter">O</span></span>
           </button>
           <div class="result-display-wrapper">
-            <p class="result-display">xxxx</p>
+            <p class="result-display"></p>
           </div>
         </div>
 
@@ -68,7 +70,7 @@
               </div>
               <div class="form-group">
                 <label for="picked-by">Choisi par</label>
-                <input type="text" id="picked-by" placeholder="Prénom" required>
+                <select id="picked-by" required></select>
               </div>
               <div class="form-group">
                 <label for="watch-date">Date de visionnage</label>
