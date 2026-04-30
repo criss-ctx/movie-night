@@ -18,8 +18,5 @@
   "bugs": {
     "url": "https://github.com/criss-ctx/movie-night/issues"
   },
-  "homepage": "https://github.com/criss-ctx/movie-night#readme",
-  "dependencies": {
-    "express": "^5.2.1"
-  }
+  "homepage": "https://github.com/criss-ctx/movie-night#readme"
 }
