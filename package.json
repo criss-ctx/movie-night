@@ -4,7 +4,7 @@
   "description": "Select a year for movie night app",
   "main": "myscripts.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "npx serve .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

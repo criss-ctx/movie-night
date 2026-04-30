@@ -578,6 +578,7 @@ body {
 }
 
 .logout-btn {
+  display: none;
   position: absolute;
   right: 16px;
   background: none;
