@@ -80,27 +80,73 @@ body {
   flex: 1;
   min-height: 0;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
-.tab-section {
-  position: absolute;
-  inset: 0;
-  display: none;
+/* ============================================================
+   TAB BAR
+   ============================================================ */
+.tab-bar {
+  flex-shrink: 0;
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  gap: 4px;
+  padding: 10px 0 12px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 150ms;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
 }
 
-.tab-section.active {
-  display: flex;
+.tab-btn.active {
+  color: var(--accent);
+}
+
+@media (hover: hover) {
+  .tab-btn:not(.active):hover {
+    color: var(--text-secondary);
+  }
+}
+
+.tab-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.tab-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* ============================================================
    TAB: PICKER
    ============================================================ */
-.tab-section--picker {
+.page-picker {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
   background: radial-gradient(ellipse 70% 50% at 50% 55%, #252038 0%, transparent 100%);
+  overflow: hidden;
 }
 
 .slide-label {
@@ -273,10 +319,12 @@ body {
 /* ============================================================
    TAB: FORM
    ============================================================ */
-.tab-section--form {
+.page-add {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: stretch;
-  justify-content: flex-start;
-  padding-top: 36px;
+  padding: 36px 24px 24px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -362,7 +410,7 @@ body {
   letter-spacing: 0.02em;
 }
 
-#journal-form {
+.journal-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -446,10 +494,12 @@ body {
 /* ============================================================
    TAB: JOURNAL
    ============================================================ */
-.tab-section--journal {
+.page-journal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: stretch;
-  justify-content: flex-start;
-  padding-top: 36px;
+  padding: 36px 24px 24px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -492,7 +542,7 @@ body {
   }
 }
 
-#journal-entries {
+.journal-entries {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -600,7 +650,6 @@ body {
   border-color: rgba(201, 165, 90, 0.35);
 }
 
-/* Edit mode */
 .journal-entry--editing {
   border-left-color: var(--border-mid);
   background: var(--surface-raised);
@@ -644,12 +693,12 @@ body {
 /* ============================================================
    CONFIRM MODAL
    ============================================================ */
-#confirm-overlay {
+.confirm-overlay {
   position: fixed;
   inset: 0;
   background: rgba(25, 23, 31, 0.85);
   backdrop-filter: blur(6px);
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   z-index: 200;
@@ -718,12 +767,12 @@ body {
 /* ============================================================
    LOGIN OVERLAY
    ============================================================ */
-#login-overlay {
+.login-overlay {
   position: fixed;
   inset: 0;
   background: rgba(25, 23, 31, 0.85);
   backdrop-filter: blur(6px);
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
@@ -770,13 +819,13 @@ body {
   letter-spacing: 0.05em;
 }
 
-#login-form {
+.login-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-#login-error {
+.login-error {
   color: var(--danger);
   font-size: 13px;
   margin: -8px 0 0;
@@ -797,60 +846,14 @@ body {
   transition: color 150ms;
 }
 
+.logout-btn.visible {
+  display: block;
+}
+
 @media (hover: hover) {
   .logout-btn:hover {
     color: var(--text-secondary);
   }
-}
-
-/* ============================================================
-   TAB BAR
-   ============================================================ */
-.tab-bar {
-  flex-shrink: 0;
-  display: flex;
-  border-top: 1px solid var(--border);
-  background: var(--bg);
-  padding-bottom: max(env(safe-area-inset-bottom), 8px);
-}
-
-.tab-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 10px 0 12px;
-  background: none;
-  border: none;
-  color: var(--text-faint);
-  cursor: pointer;
-  transition: color 150ms;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.tab-btn.active {
-  color: var(--accent);
-}
-
-@media (hover: hover) {
-  .tab-btn:not(.active):hover {
-    color: var(--text-secondary);
-  }
-}
-
-.tab-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.tab-label {
-  font-family: var(--font-ui);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 /* ============================================================
