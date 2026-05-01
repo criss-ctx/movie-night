@@ -68,6 +68,8 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
 
 let profiles = []
 let selectedPickerProfileId = null
+let journalEntries = []
+let filterProfileId = null
 
 async function loadProfiles() {
   const { data, error } = await client.from('profiles').select('*').order('id')
@@ -75,6 +77,7 @@ async function loadProfiles() {
   profiles = data
   renderPickerProfiles()
   renderFormProfileSelect()
+  renderJournalFilter()
 }
 
 function renderPickerProfiles() {
@@ -102,11 +105,13 @@ document.getElementById('picker-profiles').addEventListener('click', (e) => {
 // --- Journal ---
 
 async function loadJournal() {
-  const { data: entries, error } = await client.from('journal').select('*, profiles(name)').order('watch_date')
+  const { data: entries, error } = await client.from('journal').select('*, profiles(name)').order('watch_date', { ascending: false })
   if (error) { console.error(error); return }
+  journalEntries = entries
   pickedYears = entries.map(e => Number(e.release_year))
   updateLastChooser(entries)
-  renderJournal(entries)
+  renderJournalFilter()
+  renderJournal(filteredEntries())
 }
 
 function updateLastChooser(entries) {
@@ -145,6 +150,29 @@ function renderJournal(entries) {
     : '<p class="journal-empty">Aucune entrée pour l\'instant.<br>Ajoutez votre premier film !</p>'
   document.getElementById('journal-entries').innerHTML = html
 }
+
+function filteredEntries() {
+  if (!filterProfileId) return journalEntries
+  return journalEntries.filter(e => e.profile_id === filterProfileId)
+}
+
+function renderJournalFilter() {
+  const el = document.getElementById('journal-filter')
+  if (!el) return
+  const allBtn = `<button class="filter-btn${!filterProfileId ? ' filter-btn--active' : ''}" data-filter-id="">Tous</button>`
+  const profileBtns = profiles.map(p =>
+    `<button class="filter-btn${filterProfileId === p.id ? ' filter-btn--active' : ''}" data-filter-id="${p.id}">${escapeHtml(p.name)}</button>`
+  ).join('')
+  el.innerHTML = allBtn + profileBtns
+}
+
+document.getElementById('journal-filter').addEventListener('click', (e) => {
+  if (!e.target.matches('.filter-btn')) return
+  const val = e.target.dataset.filterId
+  filterProfileId = val ? Number(val) : null
+  renderJournalFilter()
+  renderJournal(filteredEntries())
+})
 
 function escapeAttr(str) {
   return String(str).replace(/"/g, '&quot;')
