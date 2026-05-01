@@ -85,10 +85,9 @@ function renderPickerProfiles() {
 function renderFormProfileSelect() {
   const options = '<option value="">— Choisir —</option>' +
     profiles.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')
-  document.querySelectorAll('#picked-by').forEach(select => {
-    select.innerHTML = options
-    if (selectedPickerProfileId) select.value = selectedPickerProfileId
-  })
+  const select = document.getElementById('picked-by')
+  select.innerHTML = options
+  if (selectedPickerProfileId) select.value = selectedPickerProfileId
 }
 
 document.getElementById('picker-profiles').addEventListener('click', (e) => {
@@ -142,7 +141,7 @@ function renderJournal(entries) {
           </div>`
       ).join('')
     : '<p class="journal-empty">Aucune entrée pour l\'instant.<br>Ajoutez votre premier film !</p>'
-  document.querySelectorAll('#journal-entries').forEach(el => el.innerHTML = html)
+  document.getElementById('journal-entries').innerHTML = html
 }
 
 function escapeAttr(str) {
@@ -255,6 +254,18 @@ function animateDigits(el, year) {
     }, rollSpeedMs)
   })
 }
+
+// --- Tab navigation ---
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab
+    document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'))
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+    document.getElementById('tab-' + tab).classList.add('active')
+    btn.classList.add('active')
+  })
+})
 
 loadProfiles()
 loadJournal()

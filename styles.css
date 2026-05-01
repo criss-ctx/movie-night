@@ -52,12 +52,11 @@ body {
 /* ============================================================
    LAYOUT
    ============================================================ */
-.splide {
+.app {
   height: 100svh;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative;
 }
 
 .app-header {
@@ -77,52 +76,30 @@ body {
   color: var(--text);
 }
 
-.splide__track {
+.app-content {
   flex: 1;
   min-height: 0;
+  position: relative;
 }
 
-.splide__list {
-  height: 100% !important;
-}
-
-.splide__slide {
-  height: 100% !important;
-  display: flex !important;
+.tab-section {
+  position: absolute;
+  inset: 0;
+  display: none;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  padding: 24px 24px 56px;
+  justify-content: center;
+  padding: 24px;
+}
+
+.tab-section.active {
+  display: flex;
 }
 
 /* ============================================================
-   PAGINATION DOTS
+   TAB: PICKER
    ============================================================ */
-.splide__pagination {
-  bottom: 14px;
-  gap: 8px;
-}
-
-.splide__pagination__page {
-  width: 6px;
-  height: 6px;
-  background: var(--text-faint);
-  border: none;
-  opacity: 1;
-  transition: background 250ms, width 250ms, border-radius 250ms;
-}
-
-.splide__pagination__page.is-active {
-  background: var(--text-secondary);
-  width: 20px;
-  border-radius: 3px;
-  transform: none;
-}
-
-/* ============================================================
-   SLIDE 1 — YEAR PICKER (neon preserved)
-   ============================================================ */
-.slide--picker {
+.tab-section--picker {
   background: radial-gradient(ellipse 70% 50% at 50% 55%, #252038 0%, transparent 100%);
 }
 
@@ -266,9 +243,9 @@ body {
 }
 
 /* ============================================================
-   SLIDE 2 — FORM
+   TAB: FORM
    ============================================================ */
-.slide--form {
+.tab-section--form {
   align-items: stretch;
   justify-content: flex-start;
   padding-top: 36px;
@@ -373,9 +350,9 @@ body {
 }
 
 /* ============================================================
-   SLIDE 3 — JOURNAL
+   TAB: JOURNAL
    ============================================================ */
-.slide--journal {
+.tab-section--journal {
   align-items: stretch;
   justify-content: flex-start;
   padding-top: 36px;
@@ -624,6 +601,56 @@ body {
   .logout-btn:hover {
     color: var(--text-secondary);
   }
+}
+
+/* ============================================================
+   TAB BAR
+   ============================================================ */
+.tab-bar {
+  flex-shrink: 0;
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 0 12px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-btn.active {
+  color: var(--accent);
+}
+
+@media (hover: hover) {
+  .tab-btn:not(.active):hover {
+    color: var(--text-secondary);
+  }
+}
+
+.tab-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.tab-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* ============================================================

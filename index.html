@@ -8,8 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
   <title>Movie Night</title>
 </head>
 <body>
@@ -32,74 +30,95 @@
     </div>
   </div>
 
-  <section class="splide" aria-label="Movie Night">
-
+  <div class="app">
     <header class="app-header">
       <span class="app-title">Movie Night</span>
       <button id="logout-btn" class="logout-btn" aria-label="Se déconnecter">&#8617;</button>
     </header>
 
-    <div class="splide__track">
-      <div class="splide__list">
+    <main class="app-content">
 
-        <!-- Slide 1 : Tirage -->
-        <div class="splide__slide slide--picker">
-          <p class="slide-label">Année du film<br>de la prochaine séance</p>
-          <div id="picker-profiles" class="profile-selector"></div>
-          <p id="last-chooser" class="last-chooser"></p>
-          <button class="glowing-btn" id="btn-tirage">
-            <span class="glowing-txt">G<span class="faulty-letter">O</span></span>
-          </button>
-          <div class="result-display-wrapper">
-            <p class="result-display"></p>
-          </div>
+      <!-- Tab: Tirage -->
+      <section id="tab-picker" class="tab-section tab-section--picker active">
+        <p class="slide-label">Année du film<br>de la prochaine séance</p>
+        <div id="picker-profiles" class="profile-selector"></div>
+        <p id="last-chooser" class="last-chooser"></p>
+        <button class="glowing-btn" id="btn-tirage">
+          <span class="glowing-txt">G<span class="faulty-letter">O</span></span>
+        </button>
+        <div class="result-display-wrapper">
+          <p class="result-display"></p>
         </div>
+      </section>
 
-        <!-- Slide 2 : Formulaire -->
-        <div class="splide__slide slide--form">
-          <div class="form-wrapper">
-            <h2 class="slide-heading">Ajouter au journal</h2>
-            <form id="journal-form">
-              <div class="form-group">
-                <label for="movie-title">Titre du film</label>
-                <input type="text" id="movie-title" placeholder="ex. Jurassic Park" required>
-              </div>
-              <div class="form-group">
-                <label for="release-year">Année de sortie</label>
-                <input type="number" id="release-year" placeholder="ex. 1993" min="1888" max="2030" required>
-              </div>
-              <div class="form-group">
-                <label for="picked-by">Choisi par</label>
-                <select id="picked-by" required></select>
-              </div>
-              <div class="form-group">
-                <label for="watch-date">Date de visionnage</label>
-                <input type="date" id="watch-date" required>
-              </div>
-              <button type="submit" class="form-submit">Ajouter</button>
-            </form>
-          </div>
+      <!-- Tab: Journal -->
+      <section id="tab-journal" class="tab-section tab-section--journal">
+        <div class="journal-wrapper">
+          <h2 class="slide-heading">Journal</h2>
+          <div id="journal-entries"></div>
         </div>
+      </section>
 
-        <!-- Slide 3 : Journal -->
-        <div class="splide__slide slide--journal">
-          <div class="journal-wrapper">
-            <h2 class="slide-heading">Journal</h2>
-            <div id="journal-entries"></div>
-          </div>
+      <!-- Tab: Ajouter -->
+      <section id="tab-form" class="tab-section tab-section--form">
+        <div class="form-wrapper">
+          <h2 class="slide-heading">Ajouter au journal</h2>
+          <form id="journal-form">
+            <div class="form-group">
+              <label for="movie-title">Titre du film</label>
+              <input type="text" id="movie-title" placeholder="ex. Jurassic Park" required>
+            </div>
+            <div class="form-group">
+              <label for="release-year">Année de sortie</label>
+              <input type="number" id="release-year" placeholder="ex. 1993" min="1888" max="2030" required>
+            </div>
+            <div class="form-group">
+              <label for="picked-by">Choisi par</label>
+              <select id="picked-by" required></select>
+            </div>
+            <div class="form-group">
+              <label for="watch-date">Date de visionnage</label>
+              <input type="date" id="watch-date" required>
+            </div>
+            <button type="submit" class="form-submit">Ajouter</button>
+          </form>
         </div>
+      </section>
 
-      </div>
-    </div>
-  </section>
+    </main>
 
-  <script>
-    new Splide('.splide', {
-      type: 'loop',
-      arrows: false,
-      pagination: true,
-    }).mount();
-  </script>
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-tab="picker">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="16 3 21 3 21 8"/>
+          <line x1="4" y1="20" x2="21" y2="3"/>
+          <polyline points="21 16 21 21 16 21"/>
+          <line x1="15" y1="15" x2="21" y2="21"/>
+        </svg>
+        <span class="tab-label">Tirage</span>
+      </button>
+      <button class="tab-btn" data-tab="journal">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          <line x1="8" y1="6" x2="20" y2="6"/>
+          <line x1="8" y1="12" x2="20" y2="12"/>
+          <line x1="8" y1="18" x2="20" y2="18"/>
+          <circle cx="3.5" cy="6" r="0.5" fill="currentColor"/>
+          <circle cx="3.5" cy="12" r="0.5" fill="currentColor"/>
+          <circle cx="3.5" cy="18" r="0.5" fill="currentColor"/>
+        </svg>
+        <span class="tab-label">Journal</span>
+      </button>
+      <button class="tab-btn" data-tab="form">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        <span class="tab-label">Ajouter</span>
+      </button>
+    </nav>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="config.js"></script>
   <script src="myscripts.js"></script>
