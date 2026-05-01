@@ -53,8 +53,8 @@ body {
    LAYOUT
    ============================================================ */
 .app {
-  height: 100svh;
   height: 100vh;
+  height: 100svh;
   display: flex;
   flex-direction: column;
 }
@@ -643,7 +643,7 @@ body {
   display: flex;
   border-top: 1px solid var(--border);
   background: var(--bg);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
 }
 
 .tab-btn {
