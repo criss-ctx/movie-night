@@ -1,9 +1,14 @@
 <template>
   <Teleport to="body">
     <div v-if="showLoginModal" class="login-overlay" @click.self="dismissLogin">
-      <div class="login-card">
+      <div
+        class="login-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="login-modal-title"
+      >
         <button class="login-close" aria-label="Fermer" @click="dismissLogin">&times;</button>
-        <h1 class="login-title">Movie Night</h1>
+        <h1 id="login-modal-title" class="login-title">Movie Night</h1>
         <form class="login-form" @submit.prevent="handleSubmit">
           <div class="form-group">
             <label for="login-email">Email</label>
@@ -52,4 +57,11 @@ async function handleSubmit() {
     password.value = ''
   }
 }
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && showLoginModal.value) dismissLogin()
+}
+
+onMounted(() => document.addEventListener('keydown', onKeydown))
+onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 </script>
