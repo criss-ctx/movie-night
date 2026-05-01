@@ -2,6 +2,31 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 const MIN_YEAR = 1970
 
+// --- Utils ---
+
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+}
+
+function escapeAttr(str) {
+  return String(str).replace(/"/g, '&quot;')
+}
+
+function formatDate(dateStr) {
+  const [y, m, d] = dateStr.split('-')
+  return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+// --- State ---
+
+let profiles = []
+let selectedPickerProfileId = null
+let journalEntries = []
+let filterProfileId = null
+let pickedYears = []
+let pendingDraw = null
+let lastDrawnYear = null
+
 // --- Auth ---
 
 let pendingAction = null
@@ -93,13 +118,6 @@ function showConfirm(message, confirmLabel = 'Confirmer') {
 }
 
 // --- Profiles ---
-
-let profiles = []
-let selectedPickerProfileId = null
-let journalEntries = []
-let filterProfileId = null
-let pendingDraw = null
-let lastDrawnYear = null
 
 async function loadProfiles() {
   const { data, error } = await client.from('profiles').select('*').order('id')
@@ -205,19 +223,6 @@ document.getElementById('journal-filter').addEventListener('click', (e) => {
   renderJournal(filteredEntries())
 })
 
-function escapeAttr(str) {
-  return String(str).replace(/"/g, '&quot;')
-}
-
-function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
-}
-
-function formatDate(dateStr) {
-  const [y, m, d] = dateStr.split('-')
-  return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-}
-
 document.addEventListener('submit', async (e) => {
   if (!e.target.matches('#journal-form')) return
   e.preventDefault()
@@ -275,13 +280,9 @@ document.addEventListener('click', async (e) => {
 
 // --- Year picker ---
 
-let pickedYears = []
-
 const getRandomYear = (min, max) => Math.round(Math.random() * (max - min) + min)
-const getRandomColor = () => Math.round(Math.random() * 360)
 
-const randomColor = `hsl(${getRandomColor()} 100% 69%)`
-document.documentElement.style.setProperty('--glow-color', randomColor)
+document.documentElement.style.setProperty('--glow-color', `hsl(${Math.round(Math.random() * 360)} 100% 69%)`)
 
 function getMovieYear(minYear, maxYear) {
   const nbOfYears = maxYear - minYear + 1
@@ -323,6 +324,10 @@ function animateDigits(el, year) {
     }, rollSpeedMs)
   })
 }
+
+document.getElementById('btn-tirage').addEventListener('click', () => {
+  getMovieYear(MIN_YEAR, new Date().getFullYear())
+})
 
 // --- Pending draw ---
 
@@ -401,11 +406,9 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   })
 })
 
+// --- Init ---
+
 loadPendingDraw()
 loadProfiles()
 loadJournal()
 updateAuthUI()
-
-document.getElementById('btn-tirage').addEventListener('click', () => {
-  getMovieYear(MIN_YEAR, new Date().getFullYear())
-})
