@@ -132,8 +132,8 @@ movie-night/
 - ~~Initialiser le projet Nuxt 4 + TypeScript~~ ✓
 - ~~Migrer les 3 vues (Tirage / Journal / Ajouter) en pages Nuxt~~ ✓
 - ~~Migrer `config.js` → `.env` (SUPABASE_URL + SUPABASE_KEY)~~ ✓
-- Connecter Vercel au repo (previews automatiques)
-- Adapter le déploiement (supprimer GitHub Actions → Vercel CI)
+- ~~Connecter Vercel au repo~~ ✓ — URL prod : `movie-night-flax.vercel.app`, branche `nuxt-migration`
+- Adapter le déploiement (supprimer l'ancien workflow GitHub Actions)
 - Supprimer les anciens fichiers (`index.html`, `styles.css`, `myscripts.js`, `config.js`)
 
 **Fonctionnalités à venir :**
