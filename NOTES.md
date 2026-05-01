@@ -128,15 +128,23 @@ movie-night/
 
 ## À faire
 
-**Migration (branche `nuxt-migration`) :**
+**Migration ✓ — terminée le 1er mai 2026 :**
 - ~~Initialiser le projet Nuxt 4 + TypeScript~~ ✓
 - ~~Migrer les 3 vues (Tirage / Journal / Ajouter) en pages Nuxt~~ ✓
 - ~~Migrer `config.js` → `.env` (SUPABASE_URL + SUPABASE_KEY)~~ ✓
-- ~~Connecter Vercel au repo~~ ✓ — URL prod : `movie-night-flax.vercel.app`, branche `nuxt-migration`
-- Adapter le déploiement (supprimer l'ancien workflow GitHub Actions)
-- Supprimer les anciens fichiers (`index.html`, `styles.css`, `myscripts.js`, `config.js`)
+- ~~Connecter Vercel au repo~~ ✓ — URL prod : `movie-night-flax.vercel.app`
+- ~~Supprimer workflow GitHub Actions + anciens fichiers vanilla JS~~ ✓
+- ~~Merger `nuxt-migration` → `main`~~ ✓ — `main` est désormais la branche de production
+
+**Workflow git (décidé le 1er mai 2026) :**
+- Une branche par feature : `git switch -c feat/nom`
+- `main` = prod, toujours stable et déployé sur Vercel
+- Chaque branche génère une preview Vercel automatique
+- Merge dans `main` quand la feature est prête et testée
 
 **Fonctionnalités à venir :**
+- **Accessibilité & style** — audit contraste + tailles de police (WCAG AA minimum) ; certains textes actuels sont illisibles sur fond sombre
+- **Thème dark / light** — option de bascule par utilisateur, à concevoir en même temps que l'audit accessibilité
 - **Magic link** — expliquer le concept, décider si on l'adopte
 - **TMDB** — après tirage : liste de films de l'année tirée ; depuis le journal : fiche film cliquable (URL propre `/film/:id`)
 - **Votes / notes** — table `votes` (profile_id, journal_id, rating) → stats par personne et par chooser
