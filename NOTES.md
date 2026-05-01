@@ -46,7 +46,7 @@
 ## Session du 1er mai 2026 (suite 2)
 
 - **Thème dark / light** — branche `feat/theme-toggle`
-  - `useTheme.ts` — composable (`useState`, `apply()`, `toggle()`, `init()`) ; persistance localStorage ; respecte `prefers-color-scheme` par défaut
+  - `useTheme.ts` — composable (`useState`, `apply()`, `toggle()`, `init()`) ; persistance localStorage ; dark par défaut pour les nouveaux visiteurs
   - Script inline dans `<head>` (`nuxt.config.ts`) — applique `data-theme` avant le rendu pour éviter le flash (FOUC)
   - `[data-theme="light"]` — tokens parchemin chaud : `--bg #f5f3ee`, `--surface #ece8df`, `--text #1a1720`, `--accent #7a5c1e`, `--danger #b83232`, bordures rgba(0,0,0,…)
   - Bouton GO en thème clair — sépia chaud `#261a10` + Cormorant Garamond, animation press (`translateY` + shadow collapse), sans italic ; remplace le néon incohérent sur fond clair

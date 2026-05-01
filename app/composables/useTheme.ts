@@ -17,8 +17,7 @@ export function useTheme() {
 
   function init() {
     const saved = localStorage.getItem(STORAGE_KEY) as Theme | null
-    const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    apply(saved ?? system)
+    apply(saved ?? 'dark')
   }
 
   return { theme, toggle, init }
