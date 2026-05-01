@@ -38,6 +38,7 @@ const { profiles, load: loadProfiles } = useProfiles()
 const { load: loadJournal, pickedYears, lastChooser } = useJournal()
 const { pendingDraw, load: loadPendingDraw, save: savePendingDraw } = usePendingDraw()
 const { requireAuth } = useAuth()
+const { theme } = useTheme()
 
 const selectedProfileId = ref<number | null>(null)
 const lastDrawnYear = ref<number | null>(null)
@@ -95,12 +96,15 @@ async function handleMemorize() {
   })
 }
 
-onMounted(() => {
-  document.documentElement.style.setProperty(
-    '--glow-color',
-    `hsl(${Math.round(Math.random() * 360)} 100% 69%)`
-  )
-})
+const glowHue = Math.round(Math.random() * 360)
+
+function updateGlowColor() {
+  const lightness = theme.value === 'dark' ? 69 : 48
+  document.documentElement.style.setProperty('--glow-color', `hsl(${glowHue} 100% ${lightness}%)`)
+}
+
+onMounted(updateGlowColor)
+watch(theme, updateGlowColor)
 
 await Promise.all([loadProfiles(), loadJournal(), loadPendingDraw()])
 </script>

@@ -19,6 +19,11 @@ export default defineNuxtConfig({
       meta: [
         { name: 'theme-color', content: '#19171f' }
       ],
+      script: [
+        {
+          innerHTML: `(function(){try{var t=localStorage.getItem('theme')||'dark';document.documentElement.dataset.theme=t}catch(e){}})()`,
+        }
+      ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },

@@ -33,6 +33,31 @@
 - **Constante `MIN_YEAR`** (`1970`) dans `myscripts.js`
 - **Fix Android safe area** — tab bar
 
+## Session du 1er mai 2026 (suite)
+
+- **Passe accessibilité & lisibilité** — branche `feat/a11y-readability`, mergée sur `main`
+  - Tokens contraste relevés : `--text-secondary` `#9490a8` → `#b8b4cc` (6.5→9.5:1) ; `--text-faint` `#4f4b63` → `#928eb0` (2.3→6.4:1)
+  - Opacité des bordures augmentée : `--border` 0.08→0.12, `--border-mid` 0.16→0.24, `--border-strong` 0.40→0.50
+  - `:focus-visible` global ajouté (anneau doré 2px)
+  - Tailles de police minimales relevées : labels 11→12px, tab-label 10→11px, memoriser-btn 11→12px
+  - `@media (prefers-reduced-motion: reduce)` — animations du bouton GO désactivées
+  - Modales : `role`, `aria-modal`, `aria-labelledby` ajoutés ; fermeture à la touche Escape
+
+## Session du 1er mai 2026 (suite 2)
+
+- **Thème dark / light** — branche `feat/theme-toggle`
+  - `useTheme.ts` — composable (`useState`, `apply()`, `toggle()`, `init()`) ; persistance localStorage ; dark par défaut pour les nouveaux visiteurs
+  - Script inline dans `<head>` (`nuxt.config.ts`) — applique `data-theme` avant le rendu pour éviter le flash (FOUC)
+  - `[data-theme="light"]` — tokens parchemin chaud : `--bg #f5f3ee`, `--surface #ece8df`, `--text #1a1720`, `--accent #7a5c1e`, `--danger #b83232`, bordures rgba(0,0,0,…)
+  - Bouton GO en thème clair — sépia chaud `#261a10` + Cormorant Garamond, animation press (`translateY` + shadow collapse), sans italic ; remplace le néon incohérent sur fond clair
+  - Chiffres du tirage — `text-shadow` néon remplacé par encre chaude en thème clair
+  - Profile-btn sélectionné — glow néon supprimé en thème clair (border accent uniquement)
+  - Gradient du picker — `#252038` hardcodé remplacé par `var(--surface)`
+  - Bouton soleil/lune dans le header (position absolute gauche), `init()` appelé au montage
+  - `index.vue` — luminosité du `--glow-color` adaptée au thème (69% dark / 48% light)
+  - `:focus:not(:focus-visible) { outline: none }` — supprime l'outline bleu au clic souris
+  - `-webkit-tap-highlight-color: transparent` sur `button`, `a`, `.pending-banner`
+
 ---
 
 ## Contexte & décisions
@@ -83,7 +108,8 @@ movie-night/
 │   │   ├── useJournal.ts            — CRUD + pickedYears + lastChooser
 │   │   ├── usePendingDraw.ts        — load / save / remove
 │   │   ├── useAuth.ts               — requireAuth, signIn, signOut, modal state
-│   │   └── useConfirm.ts            — confirm() → Promise<boolean>
+│   │   ├── useConfirm.ts            — confirm() → Promise<boolean>
+│   │   └── useTheme.ts              — toggle dark/light, persistance localStorage, init FOUC-safe
 │   ├── components/
 │   │   ├── ConfirmModal.vue         — Teleport, partagé via useState('confirmModal')
 │   │   └── LoginModal.vue           — Teleport, partagé via useState('showLoginModal')
@@ -143,8 +169,8 @@ movie-night/
 - Merge dans `main` quand la feature est prête et testée
 
 **Fonctionnalités à venir :**
-- **Accessibilité & style** — audit contraste + tailles de police (WCAG AA minimum) ; certains textes actuels sont illisibles sur fond sombre
-- **Thème dark / light** — option de bascule par utilisateur, à concevoir en même temps que l'audit accessibilité
+- ~~**Accessibilité & style** — audit contraste + tailles de police (WCAG AA minimum)~~ ✓ (1er mai 2026)
+- ~~**Thème dark / light** — option de bascule par utilisateur~~ ✓ (1er mai 2026)
 - **Magic link** — expliquer le concept, décider si on l'adopte
 - **TMDB** — après tirage : liste de films de l'année tirée ; depuis le journal : fiche film cliquable (URL propre `/film/:id`)
 - **Votes / notes** — table `votes` (profile_id, journal_id, rating) → stats par personne et par chooser
