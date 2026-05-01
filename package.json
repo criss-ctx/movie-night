@@ -1,22 +1,18 @@
 {
   "name": "movie-night",
-  "version": "1.0.0",
-  "description": "Select a year for movie night app",
-  "main": "myscripts.js",
+  "type": "module",
+  "private": true,
   "scripts": {
-    "start": "npx serve .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/criss-ctx/movie-night.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/criss-ctx/movie-night/issues"
-  },
-  "homepage": "https://github.com/criss-ctx/movie-night#readme"
+  "dependencies": {
+    "@nuxtjs/supabase": "^2.0.6",
+    "nuxt": "^4.4.4",
+    "vue": "^3.5.33",
+    "vue-router": "^5.0.6"
+  }
 }
