@@ -1,5 +1,7 @@
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+const MIN_YEAR = 1970
+
 // --- Auth ---
 
 let pendingAction = null
@@ -272,5 +274,5 @@ loadJournal()
 updateAuthUI()
 
 document.getElementById('btn-tirage').addEventListener('click', () => {
-  getMovieYear(1970, new Date().getFullYear())
+  getMovieYear(MIN_YEAR, new Date().getFullYear())
 })
