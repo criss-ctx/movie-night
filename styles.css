@@ -242,6 +242,34 @@ body {
   text-shadow: 0 0 12px var(--glow-color), 0 0 30px var(--glow-color);
 }
 
+.memoriser-btn {
+  margin-top: 16px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms;
+}
+
+.memoriser-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .memoriser-btn:not(:disabled):hover {
+    color: var(--text-secondary);
+    border-color: var(--border-mid);
+  }
+}
+
 /* ============================================================
    TAB: FORM
    ============================================================ */
@@ -257,6 +285,72 @@ body {
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
+}
+
+.pending-banner {
+  display: none;
+  position: relative;
+  background: rgba(201, 165, 90, 0.06);
+  border: 1px solid rgba(201, 165, 90, 0.4);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.pending-banner.visible {
+  display: block;
+}
+
+.pending-banner-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+
+.pending-banner-info {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px;
+  letter-spacing: 0.02em;
+}
+
+.pending-banner-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+@media (hover: hover) {
+  .pending-banner:hover {
+    background: rgba(201, 165, 90, 0.11);
+  }
+}
+
+.pending-banner-delete {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  cursor: pointer;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .pending-banner-delete:hover {
+    color: var(--danger);
+  }
 }
 
 .slide-heading {
@@ -545,6 +639,80 @@ body {
   text-align: center;
   padding: 48px 0;
   line-height: 1.9;
+}
+
+/* ============================================================
+   CONFIRM MODAL
+   ============================================================ */
+#confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(25, 23, 31, 0.85);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 24px;
+}
+
+.confirm-card {
+  width: 100%;
+  max-width: 320px;
+  background: var(--surface);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-md);
+  padding: 28px 24px 20px;
+}
+
+.confirm-message {
+  font-size: 15px;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-btn {
+  flex: 1;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 14px;
+  min-height: 48px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background 180ms, border-color 180ms, color 180ms;
+}
+
+.confirm-btn--cancel {
+  background: none;
+  border: 1px solid var(--border-mid);
+  color: var(--text-secondary);
+}
+
+.confirm-btn--danger {
+  background: none;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+
+@media (hover: hover) {
+  .confirm-btn--cancel:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+  .confirm-btn--danger:hover {
+    background: var(--danger);
+    color: var(--bg);
+  }
 }
 
 /* ============================================================

@@ -64,12 +64,42 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
   updateAuthUI()
 })
 
+// --- Confirm modal ---
+
+function showConfirm(message, confirmLabel = 'Confirmer') {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('confirm-overlay')
+    const okBtn = document.getElementById('confirm-ok')
+    const cancelBtn = document.getElementById('confirm-cancel')
+    document.getElementById('confirm-message').textContent = message
+    okBtn.textContent = confirmLabel
+    overlay.style.display = 'flex'
+
+    function cleanup() {
+      overlay.style.display = 'none'
+      okBtn.removeEventListener('click', onOk)
+      cancelBtn.removeEventListener('click', onCancel)
+      overlay.removeEventListener('click', onOverlay)
+    }
+
+    const onOk = () => { cleanup(); resolve(true) }
+    const onCancel = () => { cleanup(); resolve(false) }
+    const onOverlay = (e) => { if (e.target === overlay) { cleanup(); resolve(false) } }
+
+    okBtn.addEventListener('click', onOk)
+    cancelBtn.addEventListener('click', onCancel)
+    overlay.addEventListener('click', onOverlay)
+  })
+}
+
 // --- Profiles ---
 
 let profiles = []
 let selectedPickerProfileId = null
 let journalEntries = []
 let filterProfileId = null
+let pendingDraw = null
+let lastDrawnYear = null
 
 async function loadProfiles() {
   const { data, error } = await client.from('profiles').select('*').order('id')
@@ -100,6 +130,7 @@ document.getElementById('picker-profiles').addEventListener('click', (e) => {
   selectedPickerProfileId = Number(e.target.dataset.profileId)
   renderPickerProfiles()
   renderFormProfileSelect()
+  renderPendingDraw()
 })
 
 // --- Journal ---
@@ -115,7 +146,7 @@ async function loadJournal() {
 }
 
 function updateLastChooser(entries) {
-  const last = entries[entries.length - 1]
+  const last = entries[0]
   document.getElementById('last-chooser').textContent =
     last?.profiles?.name ? `Dernier choix : ${last.profiles.name}` : ''
 }
@@ -199,7 +230,13 @@ document.addEventListener('submit', async (e) => {
   }
   await requireAuth(async () => {
     const { error } = await client.from('journal').insert(entry)
-    if (!error) { form.reset(); renderFormProfileSelect(); loadJournal() }
+    if (!error) {
+      if (pendingDraw) await client.from('pending_draw').delete().eq('id', pendingDraw.id)
+      form.reset()
+      renderFormProfileSelect()
+      await loadPendingDraw()
+      loadJournal()
+    }
   })
 })
 
@@ -227,7 +264,7 @@ document.addEventListener('click', async (e) => {
       if (!error) { editingId = null; loadJournal() }
     })
   } else if (e.target.matches('.delete-btn')) {
-    if (!confirm('Supprimer cette entrée définitivement ?')) return
+    if (!await showConfirm('Supprimer cette entrée ?', 'Supprimer')) return
     const id = e.target.dataset.id
     await requireAuth(async () => {
       await client.from('journal').delete().eq('id', id)
@@ -256,6 +293,8 @@ function getMovieYear(minYear, maxYear) {
     else year = getRandomYear(minYear, maxYear)
   }
 
+  lastDrawnYear = year
+  renderPendingDraw()
   animateDigits(resultDisplay, year)
 }
 
@@ -285,6 +324,71 @@ function animateDigits(el, year) {
   })
 }
 
+// --- Pending draw ---
+
+async function loadPendingDraw() {
+  const { data } = await client.from('pending_draw').select('*, profiles(name)').limit(1).maybeSingle()
+  pendingDraw = data ?? null
+  renderPendingDraw()
+}
+
+function renderPendingDraw() {
+  const banner = document.getElementById('pending-banner')
+  if (pendingDraw) {
+    banner.innerHTML = `
+      <p class="pending-banner-label">Tirage en attente</p>
+      <p class="pending-banner-info">${escapeHtml(pendingDraw.profiles?.name ?? '?')} · ${pendingDraw.year}</p>
+      <p class="pending-banner-hint">Appuyer pour pré-remplir le formulaire</p>
+      <button class="pending-banner-delete" aria-label="Annuler ce tirage">&times;</button>
+    `
+    banner.classList.add('visible')
+  } else {
+    banner.classList.remove('visible')
+  }
+
+  const memoriserBtn = document.getElementById('btn-memoriser')
+  if (lastDrawnYear && !pendingDraw) {
+    memoriserBtn.style.display = 'inline-block'
+    memoriserBtn.disabled = !selectedPickerProfileId
+  } else {
+    memoriserBtn.style.display = 'none'
+  }
+}
+
+document.getElementById('btn-memoriser').addEventListener('click', () => {
+  if (!lastDrawnYear || !selectedPickerProfileId) return
+  requireAuth(async () => {
+    await client.from('pending_draw').delete().gte('id', 1)
+    const { error } = await client.from('pending_draw').insert({
+      profile_id: selectedPickerProfileId,
+      year: lastDrawnYear,
+      drawn_at: new Date().toISOString().split('T')[0],
+    })
+    if (!error) await loadPendingDraw()
+  })
+})
+
+document.getElementById('pending-banner').addEventListener('click', async (e) => {
+  if (!pendingDraw) return
+  if (e.target.matches('.pending-banner-delete')) {
+    e.stopPropagation()
+    if (!await showConfirm('Annuler ce tirage en attente ?', 'Annuler le tirage')) return
+    requireAuth(async () => {
+      await client.from('pending_draw').delete().eq('id', pendingDraw.id)
+      pendingDraw = null
+      renderPendingDraw()
+    })
+    return
+  }
+  document.getElementById('release-year').value = pendingDraw.year
+  document.getElementById('picked-by').value = pendingDraw.profile_id
+  document.getElementById('watch-date').value = new Date().toISOString().split('T')[0]
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'))
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+  document.getElementById('tab-form').classList.add('active')
+  document.querySelector('[data-tab="form"]').classList.add('active')
+})
+
 // --- Tab navigation ---
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -297,6 +401,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   })
 })
 
+loadPendingDraw()
 loadProfiles()
 loadJournal()
 updateAuthUI()

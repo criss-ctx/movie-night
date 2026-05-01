@@ -11,6 +11,16 @@
   <title>Movie Night</title>
 </head>
 <body>
+  <div id="confirm-overlay">
+    <div class="confirm-card">
+      <p id="confirm-message" class="confirm-message"></p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="confirm-btn confirm-btn--cancel">Annuler</button>
+        <button id="confirm-ok" class="confirm-btn confirm-btn--danger">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
   <div id="login-overlay">
     <div class="login-card">
       <button id="login-close" class="login-close" aria-label="Fermer">&times;</button>
@@ -49,6 +59,7 @@
         <div class="result-display-wrapper">
           <p class="result-display"></p>
         </div>
+        <button id="btn-memoriser" class="memoriser-btn" style="display:none">Mémoriser ce tirage</button>
       </section>
 
       <!-- Tab: Journal -->
@@ -63,6 +74,7 @@
       <!-- Tab: Ajouter -->
       <section id="tab-form" class="tab-section tab-section--form">
         <div class="form-wrapper">
+          <div id="pending-banner" class="pending-banner"></div>
           <h2 class="slide-heading">Ajouter au journal</h2>
           <form id="journal-form">
             <div class="form-group">
