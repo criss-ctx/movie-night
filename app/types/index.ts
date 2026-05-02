@@ -9,6 +9,7 @@ export interface JournalEntry {
   release_year: number
   profile_id: number | null
   watch_date: string
+  tmdb_id: number | null
   profiles: { name: string } | null
 }
 

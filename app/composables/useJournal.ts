@@ -15,13 +15,13 @@ export function useJournal() {
   const pickedYears = computed(() => entries.value.map(e => e.release_year))
   const lastChooser = computed(() => entries.value[0]?.profiles?.name ?? null)
 
-  async function add(entry: Pick<JournalEntry, 'title' | 'release_year' | 'profile_id' | 'watch_date'>) {
+  async function add(entry: Pick<JournalEntry, 'title' | 'release_year' | 'profile_id' | 'watch_date' | 'tmdb_id'>) {
     const { error } = await supabase.from('journal').insert(entry)
     if (!error) await load()
     return { error }
   }
 
-  async function update(id: number, changes: Partial<Pick<JournalEntry, 'title' | 'release_year' | 'profile_id' | 'watch_date'>>) {
+  async function update(id: number, changes: Partial<Pick<JournalEntry, 'title' | 'release_year' | 'profile_id' | 'watch_date' | 'tmdb_id'>>) {
     const { error } = await supabase.from('journal').update(changes).eq('id', id)
     if (!error) await load()
     return { error }
