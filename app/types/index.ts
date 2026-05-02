@@ -7,7 +7,6 @@ export interface JournalEntry {
   id: number
   title: string
   release_year: number
-  picked_by: string | null
   profile_id: number | null
   watch_date: string
   profiles: { name: string } | null

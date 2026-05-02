@@ -42,7 +42,7 @@
             <template v-else>
               <span class="entry-title">{{ entry.title }}</span>
               <span class="entry-year">{{ entry.release_year }}</span>
-              <span class="entry-meta">Choisi par {{ entry.profiles?.name ?? entry.picked_by ?? '?' }} · Vu le {{ formatDate(entry.watch_date) }}</span>
+              <span class="entry-meta">Choisi par {{ entry.profiles?.name ?? '?' }} · Vu le {{ formatDate(entry.watch_date) }}</span>
               <div class="entry-actions">
                 <button class="edit-btn" aria-label="Modifier" @click="handleEdit(entry)">&#9998;</button>
                 <button class="delete-btn" aria-label="Supprimer" @click="handleDelete(entry.id)">&#x2715;</button>
