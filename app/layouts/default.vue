@@ -64,6 +64,9 @@
         <span class="tab-label">Ajouter</span>
       </NuxtLink>
     </nav>
+    <p class="app-footer">
+      <NuxtLink to="/about" class="app-footer-link">À propos</NuxtLink>
+    </p>
     <ConfirmModal />
     <LoginModal />
   </div>
