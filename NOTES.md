@@ -56,14 +56,17 @@
 
 - `JournalCard.vue` — nouveau composant extrait de `journal.vue`
   - Clic sur la carte → navigation vers `/entry/[id]`
-  - Swipe gauche → zone rouge delete révélée (mobile)
-  - Swipe droite → zone dorée edit révélée (mobile)
-  - Desktop : hover bord gauche → icône edit / hover bord droit → icône delete (self-hover uniquement, pas au hover général)
+  - Swipe gauche → zone rouge delete révélée (mobile) ; swipe droite → zone dorée edit révélée
+  - Desktop : hover zone bord gauche (40px) ou bord droit (44px) → translate de la carte de 52px (symétrique), révèle la zone colorée derrière ; self-hover uniquement via sélecteur CSS `~`, pas au hover général de la carte
 - Route `/entry/[id]` — page unifiée pour toutes les entrées ; affiche les données TMDB si `tmdb_id` présent, sinon fallback avec les données Supabase uniquement ; bouton "Modifier"
 - `EditEntryModal.vue` + `useEditEntry.ts` — modale d'édition (même pattern que `ConfirmModal` : `useState` singleton + `Promise`) ; animation scale-in ; Teleport body ; fermeture Escape/backdrop
 - `useJournal.ts` — ajout de `getEntryById(id)`
 - Types — ajout de `EditChanges` et `EditModalState`
 - Simplifications — `journal.vue` et `JournalCard.vue` allégés : plus d'état d'édition inline, plus de `formRef` exposé, plus de `editingId`
+
+### 2 mai 2026 (suite 3) — Correctifs cartes
+
+- `EditEntryModal.vue` — dropdown TMDB affiché au-dessus du champ titre (`:deep(.search-dropdown)` avec `bottom: calc(100% + 4px)`) pour ne pas être masqué par le clavier virtuel mobile
 
 ---
 

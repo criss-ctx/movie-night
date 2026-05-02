@@ -138,6 +138,12 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
   padding: 20px;
 }
 
+/* Flip dropdown above input so mobile keyboard doesn't obscure it */
+.edit-body :deep(.search-dropdown) {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
 .edit-footer {
   display: flex;
   gap: 10px;
