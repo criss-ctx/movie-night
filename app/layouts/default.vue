@@ -69,6 +69,7 @@
     </p>
     <ConfirmModal />
     <LoginModal />
+    <EditEntryModal />
   </div>
 </template>
 

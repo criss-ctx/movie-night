@@ -72,3 +72,12 @@ export interface ConfirmState {
   label: string
   resolve: ((value: boolean) => void) | null
 }
+
+export type EditChanges = Partial<Pick<JournalEntry, 'title' | 'release_year' | 'profile_id' | 'watch_date' | 'tmdb_id'>>
+
+export interface EditModalState {
+  visible: boolean
+  entry: JournalEntry | null
+  profiles: Profile[]
+  resolve: ((changes: EditChanges | null) => void) | null
+}
