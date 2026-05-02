@@ -64,6 +64,12 @@
         <span class="tab-label">Ajouter</span>
       </NuxtLink>
     </nav>
+    <p class="tmdb-attribution">
+      <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" class="tmdb-logo-link">
+        <img src="/tmdb-logo.svg" alt="The Movie Database" class="tmdb-logo" />
+      </a>
+      This product uses the TMDB API but is not endorsed or certified by TMDB.
+    </p>
     <ConfirmModal />
     <LoginModal />
   </div>

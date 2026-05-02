@@ -58,6 +58,25 @@
   - `:focus:not(:focus-visible) { outline: none }` — supprime l'outline bleu au clic souris
   - `-webkit-tap-highlight-color: transparent` sur `button`, `a`, `.pending-banner`
 
+## Session du 2 mai 2026 — Intégration TMDB
+
+- **Branche** — `feat/tmdb`
+- **Migration Supabase** — colonne `tmdb_id integer` nullable ajoutée à la table `journal`
+- **Infrastructure TMDB** — token Bearer sécurisé via `runtimeConfig` (serveur uniquement) ; mock automatique quand `NUXT_TMDB_TOKEN` est absent
+  - `server/api/tmdb/search.get.ts` — recherche par titre (`/3/search/movie`)
+  - `server/api/tmxt/movie/[id].get.ts` — détail film (`/3/movie/{id}`)
+  - `server/api/tmdb/discover.get.ts` — découverte par année (`/3/discover/movie`)
+  - `server/mock/tmdb.ts` — données mock (Inception, The Dark Knight, Jurassic Park) + fallback générique
+  - `app/composables/useTmdb.ts` — `searchMovies`, `getMovieDetail`, `discoverMovies`, `getPosterUrl`
+- **Nouveaux types** — `TmdbMovie`, `TmdbMovieDetail`, `TmdbGenre`, `TmdbSearchResponse`, `TmdbDiscoverResponse`
+- **Recherche autocomplete** (`add.vue`) — debounce 400ms sur le champ titre ; dropdown avec résultats TMDB ; sélection remplit titre, année et `tmdb_id` ; `tmdb_id` remis à `null` si l'utilisateur retape manuellement
+- **Fiche film** (`/movie/[id]`) — affiche, titre, titre original, tagline, genres, durée, note TMDB, synopsis ; bouton retour ; placeholder si pas d'affiche
+- **Bouton ℹ dans le journal** — visible uniquement sur les entrées avec `tmdb_id` ; navigue vers `/movie/[tmdb_id]`
+- **Édition avec autocomplete** (`journal.vue`) — composant `EditEntryForm.vue` extrait ; même logique de recherche que `add.vue` ; `tmdb_id` mis à jour à la sauvegarde ; `display: contents` pour transparence grille CSS
+- **Page découverte** (`/discover/[year]`) — grille d'affiches + 5 filtres (Populaires, Mieux notés, Box-office, Drama, Comédie) ; `useAsyncData` + `refresh()` au changement de filtre ; `loading="lazy"` sur les affiches
+- **Bouton "Découvrir"** (`index.vue`) — apparaît uniquement après la fin de l'animation de tirage (`yearRevealed` ref, settée dans le `clearInterval` du dernier chiffre)
+- **Disclaimer TMDB** — texte légal obligatoire dans le layout, sous la tab bar : *"This product uses the TMDB API but is not endorsed or certified by TMDB."*
+
 ---
 
 ## Contexte & décisions
@@ -102,27 +121,39 @@ movie-night/
 ├── app/
 │   ├── app.vue                      — root (NuxtLayout + NuxtPage)
 │   ├── assets/css/main.css          — design tokens + styles globaux
-│   ├── types/index.ts               — Profile, JournalEntry, PendingDraw, ConfirmState
+│   ├── types/index.ts               — Profile, JournalEntry, PendingDraw, ConfirmState, TmdbMovie, TmdbMovieDetail…
 │   ├── composables/
 │   │   ├── useProfiles.ts           — useState partagé, load()
 │   │   ├── useJournal.ts            — CRUD + pickedYears + lastChooser
 │   │   ├── usePendingDraw.ts        — load / save / remove
 │   │   ├── useAuth.ts               — requireAuth, signIn, signOut, modal state
 │   │   ├── useConfirm.ts            — confirm() → Promise<boolean>
-│   │   └── useTheme.ts              — toggle dark/light, persistance localStorage, init FOUC-safe
+│   │   ├── useTheme.ts              — toggle dark/light, persistance localStorage, init FOUC-safe
+│   │   └── useTmdb.ts               — searchMovies, getMovieDetail, discoverMovies, getPosterUrl
 │   ├── components/
 │   │   ├── ConfirmModal.vue         — Teleport, partagé via useState('confirmModal')
-│   │   └── LoginModal.vue           — Teleport, partagé via useState('showLoginModal')
+│   │   ├── LoginModal.vue           — Teleport, partagé via useState('showLoginModal')
+│   │   └── EditEntryForm.vue        — formulaire d'édition inline avec autocomplete TMDB (defineExpose getChanges)
 │   ├── layouts/
-│   │   └── default.vue              — header + tab bar (NuxtLink) + modaux
+│   │   └── default.vue              — header + tab bar + disclaimer TMDB + modaux
 │   └── pages/
-│       ├── index.vue                — Tirage : profils, GO, animation, mémoriser
-│       ├── journal.vue              — liste filtrée, édition inline, suppression
-│       └── add.vue                  — formulaire + bannière tirage en attente
-├── nuxt.config.ts                   — modules, CSS global, head (fonts, meta)
-├── .env                             — SUPABASE_URL + SUPABASE_KEY (ignoré par git)
+│       ├── index.vue                — Tirage : profils, GO, animation, mémoriser, bouton Découvrir
+│       ├── journal.vue              — liste filtrée, édition via EditEntryForm, suppression
+│       ├── add.vue                  — formulaire + autocomplete TMDB + bannière tirage en attente
+│       ├── movie/
+│       │   └── [id].vue             — fiche film TMDB (affiche, genres, note, synopsis)
+│       └── discover/
+│           └── [year].vue           — grille films par année avec 5 filtres
+├── server/
+│   ├── api/tmdb/
+│   │   ├── search.get.ts            — proxy /3/search/movie
+│   │   ├── discover.get.ts          — proxy /3/discover/movie
+│   │   └── movie/[id].get.ts        — proxy /3/movie/{id}
+│   └── mock/tmdb.ts                 — données mock (fallback si NUXT_TMDB_TOKEN absent)
+├── nuxt.config.ts                   — modules, runtimeConfig (tmdbToken), CSS global, head
+├── .env                             — SUPABASE_URL + SUPABASE_KEY + NUXT_TMDB_TOKEN (ignoré par git)
+├── .env.example                     — template des variables d'environnement
 ├── package.json                     — Nuxt 4 + @nuxtjs/supabase
-├── .github/workflows/deploy.yml     — ancien workflow GitHub Pages (à supprimer après migration Vercel)
 └── .gitignore
 ```
 
@@ -132,7 +163,7 @@ movie-night/
 
 ### Supabase — tables
 
-- `journal` : id, title, release_year, picked_by (nullable, legacy), profile_id (FK → profiles), watch_date
+- `journal` : id, title, release_year, picked_by (nullable, legacy), profile_id (FK → profiles), watch_date, tmdb_id (integer, nullable)
 - `profiles` : id, name — RLS lecture publique, écriture authentifiée
   - Permissions explicites requises : `grant select on profiles to anon, authenticated;`
 - `pending_draw` : id, profile_id (FK → profiles, on delete set null), year, drawn_at — RLS lecture publique, écriture authentifiée
@@ -172,7 +203,10 @@ movie-night/
 - ~~**Accessibilité & style** — audit contraste + tailles de police (WCAG AA minimum)~~ ✓ (1er mai 2026)
 - ~~**Thème dark / light** — option de bascule par utilisateur~~ ✓ (1er mai 2026)
 - **Magic link** — expliquer le concept, décider si on l'adopte
-- **TMDB** — après tirage : liste de films de l'année tirée ; depuis le journal : fiche film cliquable (URL propre `/film/:id`)
+- ~~**TMDB** — après tirage : liste de films de l'année tirée ; depuis le journal : fiche film cliquable~~ ✓ (2 mai 2026)
+- **TMDB — page About** — l'attribution actuelle (footer) est provisoire ; TMDB demande que la mention soit dans une section "About" ou "Credits" ; créer une page `/about` avec logo, texte légal et lien vers themoviedb.org
+- **TMDB — entrées existantes** — les entrées du journal sans `tmdb_id` ne peuvent pas ouvrir de fiche ; envisager un moyen de les lier rétroactivement
+- **TMDB — pagination** — la page découverte affiche 20 films (page 1) ; ajouter pagination ou "charger plus"
 - **Votes / notes** — table `votes` (profile_id, journal_id, rating) → stats par personne et par chooser
 - **Stats** — section dédiée avec graphiques : films par personne, moyenne des notes, années préférées
 - **Multi-groupes** — plusieurs groupes avec journaux isolés (Nuxt layers + RLS Supabase par groupe)

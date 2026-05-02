@@ -130,6 +130,51 @@ body {
   padding-bottom: max(env(safe-area-inset-bottom), 8px);
 }
 
+.tmdb-attribution {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-faint);
+  padding: 4px 16px max(env(safe-area-inset-bottom), 4px);
+  margin: 0;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.tmdb-attribution {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tmdb-logo-link {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 4px;
+  padding: 3px 6px;
+  opacity: 0.7;
+  transition: opacity 150ms;
+}
+
+[data-theme="light"] .tmdb-logo-link {
+  background: #0d253f;
+}
+
+.tmdb-logo {
+  height: 10px;
+  width: auto;
+  display: block;
+}
+
+@media (hover: hover) {
+  .tmdb-logo-link:hover {
+    opacity: 1;
+  }
+}
+
 .tab-btn {
   flex: 1;
   display: flex;
@@ -765,6 +810,10 @@ body {
   grid-template-columns: 1fr auto;
   grid-template-rows: repeat(4, auto);
   gap: 8px 12px;
+}
+
+.edit-entry-form {
+  display: contents;
 }
 
 .entry-edit-input {
