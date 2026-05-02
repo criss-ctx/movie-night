@@ -77,6 +77,13 @@
 - **Bouton "Découvrir"** (`index.vue`) — apparaît uniquement après la fin de l'animation de tirage (`yearRevealed` ref, settée dans le `clearInterval` du dernier chiffre)
 - **Disclaimer TMDB** — texte légal obligatoire dans le layout, sous la tab bar : *"This product uses the TMDB API but is not endorsed or certified by TMDB."*
 
+## Session du 2 mai 2026 (suite) — feat/tmdb finalisée
+
+- **Page `/about`** — attribution TMDB officielle (logo approuvé, texte légal exact, lien themoviedb.org) ; TMDB exige que l'attribution soit dans une section "About" ou "Credits", pas nécessairement sur chaque page
+- **Footer simplifié** — `tmdb-attribution` supprimé du layout ; remplacé par un lien texte "À propos" → `/about` ; classe générique `.app-footer` / `.app-footer-link`
+- **Infinite scroll** — page `/discover/[year]` : `IntersectionObserver` sur élément sentinelle en bas de grille ; chargement automatique de la page suivante ; `useAsyncData` conservé pour la page 1 (SSR), pages suivantes via `discoverMovies` direct + accumulation dans un `ref`
+- **Liaison rétroactive** — couverte par l'édition inline existante (`EditEntryForm` avec autocomplete TMDB)
+
 ---
 
 ## Contexte & décisions
@@ -135,15 +142,16 @@ movie-night/
 │   │   ├── LoginModal.vue           — Teleport, partagé via useState('showLoginModal')
 │   │   └── EditEntryForm.vue        — formulaire d'édition inline avec autocomplete TMDB (defineExpose getChanges)
 │   ├── layouts/
-│   │   └── default.vue              — header + tab bar + disclaimer TMDB + modaux
+│   │   └── default.vue              — header + tab bar + lien "À propos" + modaux
 │   └── pages/
 │       ├── index.vue                — Tirage : profils, GO, animation, mémoriser, bouton Découvrir
 │       ├── journal.vue              — liste filtrée, édition via EditEntryForm, suppression
 │       ├── add.vue                  — formulaire + autocomplete TMDB + bannière tirage en attente
+│       ├── about.vue                — attribution TMDB officielle (logo, texte légal, lien)
 │       ├── movie/
 │       │   └── [id].vue             — fiche film TMDB (affiche, genres, note, synopsis)
 │       └── discover/
-│           └── [year].vue           — grille films par année avec 5 filtres
+│           └── [year].vue           — grille films par année avec 5 filtres + infinite scroll
 ├── server/
 │   ├── api/tmdb/
 │   │   ├── search.get.ts            — proxy /3/search/movie
@@ -204,9 +212,9 @@ movie-night/
 - ~~**Thème dark / light** — option de bascule par utilisateur~~ ✓ (1er mai 2026)
 - **Magic link** — expliquer le concept, décider si on l'adopte
 - ~~**TMDB** — après tirage : liste de films de l'année tirée ; depuis le journal : fiche film cliquable~~ ✓ (2 mai 2026)
-- **TMDB — page About** — l'attribution actuelle (footer) est provisoire ; TMDB demande que la mention soit dans une section "About" ou "Credits" ; créer une page `/about` avec logo, texte légal et lien vers themoviedb.org
-- **TMDB — entrées existantes** — les entrées du journal sans `tmdb_id` ne peuvent pas ouvrir de fiche ; envisager un moyen de les lier rétroactivement
-- **TMDB — pagination** — la page découverte affiche 20 films (page 1) ; ajouter pagination ou "charger plus"
+- ~~**TMDB — page About**~~ ✓ (2 mai 2026) — page `/about` avec logo, texte légal, lien themoviedb.org ; footer simplifié en lien "À propos"
+- ~~**TMDB — entrées existantes**~~ ✓ — couvert par l'édition inline avec autocomplete TMDB
+- ~~**TMDB — pagination**~~ ✓ (2 mai 2026) — infinite scroll avec IntersectionObserver sur la page découverte
 - **Votes / notes** — table `votes` (profile_id, journal_id, rating) → stats par personne et par chooser
 - **Stats** — section dédiée avec graphiques : films par personne, moyenne des notes, années préférées
 - **Multi-groupes** — plusieurs groupes avec journaux isolés (Nuxt layers + RLS Supabase par groupe)

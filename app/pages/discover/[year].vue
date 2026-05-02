@@ -21,7 +21,7 @@
         >{{ filter.label }}</button>
       </div>
 
-      <div v-if="pending" class="movie-loading">Chargement…</div>
+      <div v-if="pending && movies.length === 0" class="movie-loading">Chargement…</div>
 
       <div v-else-if="movies.length" class="discover-grid">
         <NuxtLink
@@ -52,14 +52,18 @@
         </NuxtLink>
       </div>
 
-      <p v-else class="movie-loading">Aucun film trouvé pour ce filtre.</p>
+      <p v-else-if="!pending" class="movie-loading">Aucun film trouvé pour ce filtre.</p>
+
+      <div v-if="loadingMore" class="discover-loading-more">Chargement…</div>
+
+      <div ref="sentinel" class="discover-sentinel" aria-hidden="true" />
 
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { TmdbDiscoverResponse } from '~/types'
+import type { TmdbMovie, TmdbDiscoverResponse } from '~/types'
 
 const router = useRouter()
 const route = useRoute()
@@ -76,6 +80,11 @@ const filters = [
 ]
 
 const activeFilter = ref(filters[0])
+const page = ref(1)
+const totalPages = ref(1)
+const movies = ref<TmdbMovie[]>([])
+const loadingMore = ref(false)
+const sentinel = ref<HTMLElement | null>(null)
 
 const { data, pending, refresh } = await useAsyncData<TmdbDiscoverResponse>(
   `discover-${year}`,
@@ -84,13 +93,50 @@ const { data, pending, refresh } = await useAsyncData<TmdbDiscoverResponse>(
     sort_by: activeFilter.value.sort_by,
     with_genres: activeFilter.value.with_genres,
     vote_count_gte: activeFilter.value.vote_count_gte,
+    page: 1,
   })
 )
 
-const movies = computed(() => data.value?.results ?? [])
+watch(data, (val) => {
+  if (!val) return
+  movies.value = val.results
+  totalPages.value = val.total_pages
+  page.value = 1
+}, { immediate: true })
 
 async function setFilter(filter: typeof filters[0]) {
   activeFilter.value = filter
+  movies.value = []
   await refresh()
 }
+
+async function loadMore() {
+  if (loadingMore.value || page.value >= totalPages.value) return
+  loadingMore.value = true
+  page.value++
+  const more = await discoverMovies({
+    year,
+    sort_by: activeFilter.value.sort_by,
+    with_genres: activeFilter.value.with_genres,
+    vote_count_gte: activeFilter.value.vote_count_gte,
+    page: page.value,
+  })
+  movies.value = [...movies.value, ...more.results]
+  loadingMore.value = false
+}
+
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) loadMore()
+  }, { threshold: 0.1 })
+
+  if (sentinel.value) observer.observe(sentinel.value)
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+})
+
 </script>

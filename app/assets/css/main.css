@@ -974,6 +974,17 @@ body {
   color: var(--text-faint);
 }
 
+.discover-loading-more {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-faint);
+  padding: 20px 0 8px;
+}
+
+.discover-sentinel {
+  height: 1px;
+}
+
 /* ============================================================
    MOVIE DETAIL PAGE
    ============================================================ */
