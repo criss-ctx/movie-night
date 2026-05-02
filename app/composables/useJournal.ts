@@ -33,5 +33,14 @@ export function useJournal() {
     return { error }
   }
 
-  return { entries, load, pickedYears, lastChooser, add, update, remove }
+  async function getEntryById(id: number): Promise<JournalEntry | null> {
+    const { data } = await supabase
+      .from('journal')
+      .select('*, profiles(name)')
+      .eq('id', id)
+      .single()
+    return data as JournalEntry | null
+  }
+
+  return { entries, load, pickedYears, lastChooser, add, update, remove, getEntryById }
 }

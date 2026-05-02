@@ -1,75 +1,50 @@
-# Nuxt Minimal Starter
+# Movie Night
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Application privée pour gérer les soirées cinéma en famille. Chaque participant tire une année au sort, choisit un film en secret, et le révèle lors de la séance suivante.
 
-## Setup
+## Fonctionnalités
 
-Make sure to install dependencies:
+- **Tirage** — tire une année aléatoire, animation slot machine, mémorise le tirage en attente
+- **Journal** — historique des films vus, filtré par participant, avec fiches TMDB
+- **Ajouter** — formulaire avec autocomplete TMDB (titre, année, affiche liés automatiquement)
+- **Découvrir** — grille de films par année tirée (5 filtres, infinite scroll)
+- **Fiche film** — affiche, genres, durée, note, synopsis, bouton Modifier
 
-```bash
-# npm
-npm install
+## Stack
 
-# pnpm
-pnpm install
+- **Frontend** — Vue 3 + Nuxt 4 + TypeScript
+- **Base de données** — Supabase (PostgreSQL + RLS)
+- **API** — TMDB (The Movie Database)
+- **Déploiement** — Vercel (`movie-night-flax.vercel.app`)
 
-# yarn
-yarn install
+## Prérequis
 
-# bun
-bun install
+Créer un fichier `.env` à la racine (voir `.env.example`) :
+
+```env
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_KEY=your_anon_key
+NUXT_TMDB_TOKEN=your_tmdb_bearer_token
 ```
 
-## Development Server
+Sans `NUXT_TMDB_TOKEN`, les appels TMDB utilisent des données mock (Inception, The Dark Knight…).
 
-Start the development server on `http://localhost:3000`:
+## Installation
 
 ```bash
-# npm
+npm install
+```
+
+## Développement
+
+```bash
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+# → http://localhost:3000
 ```
 
 ## Production
 
-Build the application for production:
-
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
 npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

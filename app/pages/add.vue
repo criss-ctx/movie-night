@@ -131,7 +131,7 @@ function prefillFromPendingDraw() {
   if (!pendingDraw.value) return
   form.release_year = pendingDraw.value.year
   form.profile_id = pendingDraw.value.profile_id ?? ''
-  form.watch_date = new Date().toISOString().split('T')[0]
+  form.watch_date = new Date().toISOString().split('T')[0] ?? ''
 }
 
 async function handleDeletePendingDraw() {
