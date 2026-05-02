@@ -104,3 +104,28 @@ defineExpose({
   })
 })
 </script>
+
+<style scoped>
+.edit-entry-form {
+  display: contents;
+}
+
+.entry-edit-input {
+  background: var(--bg);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  padding: 9px 12px;
+  min-height: 44px;
+  width: 100%;
+  outline: none;
+  grid-column: 1;
+  transition: border-color 150ms;
+}
+
+.entry-edit-input:focus {
+  border-color: var(--border-strong);
+}
+</style>

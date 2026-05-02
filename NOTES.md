@@ -84,6 +84,21 @@
 - **Infinite scroll** — page `/discover/[year]` : `IntersectionObserver` sur élément sentinelle en bas de grille ; chargement automatique de la page suivante ; `useAsyncData` conservé pour la page 1 (SSR), pages suivantes via `discoverMovies` direct + accumulation dans un `ref`
 - **Liaison rétroactive** — couverte par l'édition inline existante (`EditEntryForm` avec autocomplete TMDB)
 
+## Session du 2 mai 2026 (suite 2) — Extensions VS Code + migration CSS scopé
+
+- **Extensions VS Code** — `.vscode/extensions.json` (recommandations automatiques) + `.vscode/extensions.md` (documentation locale/WSL)
+  - WSL : `Vue.volar`, `esbenp.prettier-vscode`, `dbaeumer.vscode-eslint`, `vunguyentuan.vscode-css-variables`, `usernamehw.errorlens`, `eamodio.gitlens`, `rangav.vscode-thunder-client`
+  - Local (UI) : `formulahendry.auto-rename-tag`, `mikestead.dotenv`
+
+- **Migration CSS — `<style scoped>`** — `main.css` passe de 1550 à 345 lignes
+  - Styles composant/page migrés dans `<style scoped>` : `ConfirmModal.vue`, `LoginModal.vue`, `default.vue` (tab bar, theme-toggle, logout-btn), `about.vue`, `index.vue`, `add.vue`, `journal.vue`, `EditEntryForm.vue`, `discover/[year].vue`, `movie/[id].vue`
+  - `main.css` conserve uniquement : TOKENS, LIGHT THEME, BASE, LAYOUT, SHARED COMPONENTS (`slide-heading`, `search-*`, `form-group`, `form-submit`), SHARED NAVIGATION (`movie-back`), ANIMATIONS (`@keyframes`)
+  - Classes partagées (3+ usages) restées globales : `slide-heading` (add/journal/discover), `form-group` + `form-submit` (add/LoginModal), `search-*` (add/EditEntryForm), `movie-back` (about/discover/movie)
+  - Overrides `[data-theme="light"]` du picker migrés dans `index.vue` scoped (ne pouvaient plus matcher les éléments scopés depuis `main.css`)
+  - `.digit` / `.digit.settled` passés en `:global()` — spans créés dynamiquement via `innerHTML`, hors portée du compilateur Vue
+  - `onMounted(updateGlowColor)` → `if (import.meta.client) updateGlowColor()` — réduit le flash de couleur néon au premier chargement
+  - `-webkit-tap-highlight-color` retiré de `.pending-banner` dans BASE et ajouté dans le scoped de `add.vue`
+
 ---
 
 ## Contexte & décisions

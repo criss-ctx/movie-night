@@ -78,3 +78,119 @@ const { theme, toggle, init } = useTheme()
 
 onMounted(init)
 </script>
+
+<style scoped>
+.tab-bar {
+  flex-shrink: 0;
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+}
+
+.app-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px max(env(safe-area-inset-bottom), 6px);
+  margin: 0;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.app-footer-link {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .app-footer-link:hover { color: var(--text-secondary); }
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 0 12px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 150ms;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+}
+
+.tab-btn.active {
+  color: var(--accent);
+}
+
+@media (hover: hover) {
+  .tab-btn:not(.active):hover {
+    color: var(--text-secondary);
+  }
+}
+
+.tab-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.tab-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.theme-toggle {
+  position: absolute;
+  left: 16px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .theme-toggle:hover {
+    color: var(--text-secondary);
+  }
+}
+
+.logout-btn {
+  display: none;
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px;
+  line-height: 1;
+  transition: color 150ms;
+}
+
+.logout-btn.visible {
+  display: block;
+}
+
+@media (hover: hover) {
+  .logout-btn:hover {
+    color: var(--text-secondary);
+  }
+}
+</style>

@@ -65,3 +65,70 @@ function onKeydown(e: KeyboardEvent) {
 onMounted(() => document.addEventListener('keydown', onKeydown))
 onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 </script>
+
+<style scoped>
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(25, 23, 31, 0.85);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.login-card {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-md);
+  padding: 36px 32px 32px;
+}
+
+.login-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .login-close:hover {
+    color: var(--text);
+  }
+}
+
+.login-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  margin: 0 0 40px;
+  letter-spacing: 0.05em;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-error {
+  color: var(--danger);
+  font-size: 13px;
+  margin: -8px 0 0;
+  min-height: 16px;
+}
+</style>
