@@ -21,6 +21,27 @@ export interface PendingDraw {
   profiles: { name: string } | null
 }
 
+export interface TmdbMovie {
+  id: number
+  title: string
+  original_title: string
+  release_date: string
+  overview: string
+  poster_path: string | null
+  backdrop_path: string | null
+  vote_average: number
+  vote_count: number
+  popularity: number
+  genre_ids: number[]
+}
+
+export interface TmdbSearchResponse {
+  page: number
+  results: TmdbMovie[]
+  total_pages: number
+  total_results: number
+}
+
 export interface ConfirmState {
   visible: boolean
   message: string
