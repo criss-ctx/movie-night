@@ -35,6 +35,28 @@ export interface TmdbMovie {
   genre_ids: number[]
 }
 
+export interface TmdbGenre {
+  id: number
+  name: string
+}
+
+export interface TmdbMovieDetail {
+  id: number
+  title: string
+  original_title: string
+  tagline: string
+  overview: string
+  release_date: string
+  runtime: number | null
+  poster_path: string | null
+  backdrop_path: string | null
+  vote_average: number
+  vote_count: number
+  popularity: number
+  genres: TmdbGenre[]
+  status: string
+}
+
 export interface TmdbSearchResponse {
   page: number
   results: TmdbMovie[]

@@ -44,6 +44,7 @@
               <span class="entry-year">{{ entry.release_year }}</span>
               <span class="entry-meta">Choisi par {{ entry.profiles?.name ?? '?' }} · Vu le {{ formatDate(entry.watch_date) }}</span>
               <div class="entry-actions">
+                <NuxtLink v-if="entry.tmdb_id" :to="`/movie/${entry.tmdb_id}`" class="info-btn" aria-label="Fiche film">&#9432;</NuxtLink>
                 <button class="edit-btn" aria-label="Modifier" @click="handleEdit(entry)">&#9998;</button>
                 <button class="delete-btn" aria-label="Supprimer" @click="handleDelete(entry.id)">&#x2715;</button>
               </div>

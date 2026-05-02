@@ -1,3 +1,5 @@
+import { getMockSearchResults } from '../../mock/tmdb'
+
 export default defineEventHandler(async (event) => {
   const { query } = getQuery(event)
 
@@ -6,6 +8,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const { tmdbToken } = useRuntimeConfig(event)
+
+  if (!tmdbToken) {
+    return getMockSearchResults(query)
+  }
 
   const url = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=fr-FR&include_adult=false`
 
