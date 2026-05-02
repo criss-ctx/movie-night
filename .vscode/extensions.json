@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "Vue.volar",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "formulahendry.auto-rename-tag",
+    "vunguyentuan.vscode-css-variables",
+    "mikestead.dotenv",
+    "usernamehw.errorlens",
+    "eamodio.gitlens"
+  ]
+}

@@ -46,3 +46,97 @@
 <script setup lang="ts">
 const router = useRouter()
 </script>
+
+<style scoped>
+.page-about {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px 32px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.about-wrapper {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.about-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+
+.about-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.about-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 28px 0;
+}
+
+.about-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.about-tmdb-logo-link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: #0d253f;
+  width: fit-content;
+  transition: opacity 150ms;
+}
+
+@media (hover: hover) {
+  .about-tmdb-logo-link:hover { opacity: 0.85; }
+}
+
+.about-tmdb-logo {
+  height: 20px;
+  width: auto;
+  display: block;
+}
+
+.about-section-title {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 4px 0 0;
+}
+
+.about-section-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.about-tmdb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 150ms;
+}
+
+@media (hover: hover) {
+  .about-tmdb-link:hover { opacity: 0.75; }
+}
+</style>

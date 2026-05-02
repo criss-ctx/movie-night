@@ -103,3 +103,185 @@ async function handleDelete(id: number) {
 
 await Promise.all([loadProfiles(), loadJournal()])
 </script>
+
+<style scoped>
+.page-journal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 36px 24px 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.journal-wrapper {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.journal-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.filter-btn {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  min-height: 34px;
+  border: 1px solid var(--border-mid);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms, background 150ms;
+}
+
+.filter-btn--active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(201, 165, 90, 0.08);
+}
+
+@media (hover: hover) {
+  .filter-btn:not(.filter-btn--active):hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+}
+
+.journal-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 16px;
+}
+
+.journal-entry {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 12px;
+  align-items: center;
+  transition: background 180ms;
+}
+
+@media (hover: hover) {
+  .journal-entry:hover {
+    background: var(--surface-raised);
+  }
+}
+
+.entry-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  grid-column: 1;
+  grid-row: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-year {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.entry-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  grid-column: 1;
+  grid-row: 3;
+  padding-top: 2px;
+}
+
+.entry-actions {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+}
+
+.info-btn,
+.edit-btn,
+.delete-btn,
+.save-btn,
+.cancel-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-sm);
+  color: var(--text-secondary);
+  font-size: 15px;
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms, background 150ms;
+}
+
+@media (hover: hover) {
+  .info-btn:hover,
+  .edit-btn:hover,
+  .cancel-btn:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+    background: var(--surface-raised);
+  }
+
+  .delete-btn:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: rgba(217, 107, 107, 0.08);
+  }
+
+  .save-btn:hover {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+.save-btn {
+  color: var(--accent);
+  border-color: rgba(201, 165, 90, 0.35);
+}
+
+.journal-entry--editing {
+  border-left-color: var(--border-mid);
+  background: var(--surface-raised);
+  grid-template-columns: 1fr auto;
+  grid-template-rows: repeat(4, auto);
+  gap: 8px 12px;
+}
+
+.journal-entry--editing .entry-actions {
+  grid-column: 2;
+  grid-row: 1 / 5;
+}
+
+.journal-empty {
+  color: var(--text-faint);
+  font-size: 14px;
+  text-align: center;
+  padding: 48px 0;
+  line-height: 1.9;
+}
+</style>

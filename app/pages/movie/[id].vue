@@ -81,3 +81,151 @@ const formattedRuntime = computed(() => {
   return h > 0 ? `${h}h${m > 0 ? String(m).padStart(2, '0') : ''}` : `${m}min`
 })
 </script>
+
+<style scoped>
+.page-movie {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.movie-wrapper {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.movie-loading,
+.movie-error {
+  color: var(--text-faint);
+  font-size: 14px;
+  text-align: center;
+  padding: 48px 0;
+}
+
+.movie-content {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.movie-poster-col {
+  flex-shrink: 0;
+  width: 120px;
+}
+
+.movie-poster {
+  width: 100%;
+  border-radius: var(--r-md);
+  display: block;
+}
+
+.movie-poster-placeholder {
+  width: 100%;
+  aspect-ratio: 2/3;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+}
+
+.movie-info-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.movie-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+.movie-original-title {
+  font-size: 13px;
+  color: var(--text-faint);
+  margin: 0 0 10px;
+  font-style: italic;
+}
+
+.movie-tagline {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 14px;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.movie-meta {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.movie-meta-item {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.movie-meta-item + .movie-meta-item::before {
+  content: '·';
+  margin-right: 10px;
+  color: var(--text-faint);
+}
+
+.movie-genres {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.movie-genre-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.movie-rating {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.movie-rating-score {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.movie-rating-label {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.movie-overview {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text-secondary);
+  margin: 0;
+}
+</style>

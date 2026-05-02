@@ -164,3 +164,94 @@ async function handleSubmit() {
 
 await Promise.all([loadProfiles(), loadPendingDraw()])
 </script>
+
+<style scoped>
+.page-add {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 36px 24px 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.pending-banner {
+  display: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  background: rgba(201, 165, 90, 0.06);
+  border: 1px solid rgba(201, 165, 90, 0.4);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.pending-banner.visible {
+  display: block;
+}
+
+.pending-banner-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+
+.pending-banner-info {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px;
+  letter-spacing: 0.02em;
+}
+
+.pending-banner-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+@media (hover: hover) {
+  .pending-banner:hover {
+    background: rgba(201, 165, 90, 0.11);
+  }
+}
+
+.pending-banner-delete {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  cursor: pointer;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .pending-banner-delete:hover {
+    color: var(--danger);
+  }
+}
+
+.journal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+</style>
