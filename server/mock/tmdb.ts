@@ -1,4 +1,4 @@
-import type { TmdbMovieDetail, TmdbMovie, TmdbSearchResponse } from '~/types'
+import type { TmdbMovieDetail, TmdbMovie, TmdbSearchResponse, TmdbDiscoverResponse } from '~/types'
 
 export const mockMovieDetails: Record<number, TmdbMovieDetail> = {
   27205: {
@@ -123,6 +123,15 @@ const DEFAULT_MOCK_MOVIE: TmdbMovieDetail = {
 
 export function getMockMovieDetail(id: number): TmdbMovieDetail {
   return mockMovieDetails[id] ?? DEFAULT_MOCK_MOVIE
+}
+
+export function getMockDiscoverResults(): TmdbDiscoverResponse {
+  return {
+    page: 1,
+    results: mockSearchResults,
+    total_pages: 1,
+    total_results: mockSearchResults.length
+  }
 }
 
 export function getMockSearchResults(query: string): TmdbSearchResponse {

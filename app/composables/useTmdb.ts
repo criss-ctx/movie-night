@@ -1,4 +1,4 @@
-import type { TmdbSearchResponse, TmdbMovieDetail } from '~/types'
+import type { TmdbSearchResponse, TmdbMovieDetail, TmdbDiscoverResponse } from '~/types'
 
 const POSTER_BASE_URL = 'https://image.tmdb.org/t/p/'
 
@@ -7,6 +7,16 @@ export function useTmdb() {
     return await $fetch<TmdbSearchResponse>('/api/tmdb/search', {
       query: { query }
     })
+  }
+
+  async function discoverMovies(params: {
+    year: number
+    sort_by?: string
+    with_genres?: string
+    vote_count_gte?: number
+    page?: number
+  }): Promise<TmdbDiscoverResponse> {
+    return await $fetch<TmdbDiscoverResponse>('/api/tmdb/discover', { query: params })
   }
 
   async function getMovieDetail(tmdbId: number): Promise<TmdbMovieDetail> {
@@ -18,5 +28,5 @@ export function useTmdb() {
     return `${POSTER_BASE_URL}${size}${posterPath}`
   }
 
-  return { searchMovies, getMovieDetail, getPosterUrl }
+  return { searchMovies, getMovieDetail, discoverMovies, getPosterUrl }
 }

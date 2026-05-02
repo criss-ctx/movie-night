@@ -28,6 +28,12 @@
       :disabled="!selectedProfileId"
       @click="handleMemorize"
     >Mémoriser ce tirage</button>
+
+    <NuxtLink
+      v-if="yearRevealed"
+      :to="`/discover/${lastDrawnYear}`"
+      class="discover-btn"
+    >Découvrir les films de {{ lastDrawnYear }}</NuxtLink>
   </div>
 </template>
 
@@ -42,6 +48,7 @@ const { theme } = useTheme()
 
 const selectedProfileId = ref<number | null>(null)
 const lastDrawnYear = ref<number | null>(null)
+const yearRevealed = ref(false)
 const resultDisplay = ref<HTMLElement | null>(null)
 
 function drawYear() {
@@ -58,6 +65,7 @@ function drawYear() {
   }
 
   lastDrawnYear.value = year
+  yearRevealed.value = false
   animateDigits(year)
 }
 
@@ -82,6 +90,7 @@ function animateDigits(year: number) {
         ;(spans[i] as HTMLElement).textContent = finalDigit
         ;(spans[i] as HTMLElement).classList.add('settled')
         clearInterval(timer)
+        if (i === digits.length - 1) yearRevealed.value = true
       } else {
         ;(spans[i] as HTMLElement).textContent = String(Math.floor(Math.random() * 10))
       }

@@ -64,6 +64,8 @@ export interface TmdbSearchResponse {
   total_results: number
 }
 
+export type TmdbDiscoverResponse = TmdbSearchResponse
+
 export interface ConfirmState {
   visible: boolean
   message: string
