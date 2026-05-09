@@ -72,7 +72,7 @@ import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
 const router = useRouter()
 const route = useRoute()
 const { getMovieDetail, getPosterUrl } = useTmdb()
-const { pendingDraw, load: loadPendingDraw, setFilm, clearFilm } = usePendingDraw()
+const { pendingDraw, pendingMovie, load: loadPendingDraw, setFilm, clearFilm } = usePendingDraw()
 const { requireAuth } = useAuth()
 
 const { data: movie, pending } = await useAsyncData<TmdbMovieDetail>(
@@ -94,7 +94,7 @@ const formattedRuntime = computed(() => {
   return h > 0 ? `${h}h${m > 0 ? String(m).padStart(2, '0') : ''}` : `${m}min`
 })
 
-const isChosen = computed(() => pendingDraw.value?.tmdb_id === movie.value?.id)
+const isChosen = computed(() => pendingMovie.value?.tmdb_id === movie.value?.id)
 const hasWarning = computed(() => movie.value?.genres.some(g => TMDB_WARNING_GENRES.includes(g.id)) ?? false)
 
 async function handleChoose() {

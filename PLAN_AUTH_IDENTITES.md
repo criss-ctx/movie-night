@@ -11,7 +11,7 @@ sécuriser le film secret, et poser la fondation du système de votes.
 |-------|-------|--------|
 | 1 | Lier les profils aux comptes Auth | ✅ Terminé |
 | 2 | Magic link (remplace email + mot de passe) | ✅ Terminé |
-| 3 | Film secret (`pending_film`) | ⬜ À faire |
+| 3 | Film secret (`pending_movie`) | 🔶 En test (colonnes tmdb_id/title à supprimer de pending_draw après validation) |
 | 4 | Votes / notes | ⬜ À faire |
 
 ---

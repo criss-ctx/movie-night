@@ -64,10 +64,10 @@
             <button
               v-if="pendingDraw"
               class="card-choose-btn"
-              :class="{ 'card-choose-btn--chosen': pendingDraw.tmdb_id === movie.id }"
-              :title="pendingDraw.tmdb_id === movie.id ? 'Film sélectionné' : 'Choisir ce film'"
+              :class="{ 'card-choose-btn--chosen': pendingMovie?.tmdb_id === movie.id }"
+              :title="pendingMovie?.tmdb_id === movie.id ? 'Film sélectionné' : 'Choisir ce film'"
               @click.prevent.stop="toggleFilm(movie)"
-            >{{ pendingDraw.tmdb_id === movie.id ? '✓' : '+' }}</button>
+            >{{ pendingMovie?.tmdb_id === movie.id ? '✓' : '+' }}</button>
           </div>
           <div class="movie-card-info">
             <span class="movie-card-title">{{ movie.title }}</span>
@@ -90,7 +90,7 @@
 import type { TmdbMovie, TmdbDiscoverResponse } from '~/types'
 import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
 
-const { pendingDraw, load: loadPendingDraw, setFilm, clearFilm } = usePendingDraw()
+const { pendingDraw, pendingMovie, load: loadPendingDraw, setFilm, clearFilm } = usePendingDraw()
 const { entries: journalEntries, load: loadJournal } = useJournal()
 const { requireAuth } = useAuth()
 
@@ -197,7 +197,7 @@ function toggleWarning(movieId: number) {
 
 async function toggleFilm(movie: TmdbMovie) {
   await requireAuth(async () => {
-    if (pendingDraw.value?.tmdb_id === movie.id) {
+    if (pendingMovie.value?.tmdb_id === movie.id) {
       await clearFilm()
     } else {
       await setFilm(movie.id, movie.title)

@@ -43,10 +43,19 @@ const MIN_YEAR = 1970
 const { profiles, load: loadProfiles } = useProfiles()
 const { load: loadJournal, pickedYears, lastChooser } = useJournal()
 const { pendingDraw, load: loadPendingDraw, save: savePendingDraw } = usePendingDraw()
-const { requireAuth } = useAuth()
+const { requireAuth, user } = useAuth()
 const { theme } = useTheme()
 
 const selectedProfileId = ref<number | null>(null)
+
+// Pre-select the logged-in user's profile if found
+watch([user, profiles], () => {
+  if (!selectedProfileId.value && user.value) {
+    const mine = profiles.value.find(p => p.user_id === user.value!.id)
+    if (mine) selectedProfileId.value = mine.id
+  }
+}, { immediate: true })
+
 const lastDrawnYear = ref<number | null>(null)
 const yearRevealed = ref(false)
 const resultDisplay = ref<HTMLElement | null>(null)

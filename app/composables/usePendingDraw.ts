@@ -4,10 +4,13 @@ export function usePendingDraw() {
   const supabase = useSupabaseClient()
   const pendingDraw = useState<PendingDraw | null>('pendingDraw', () => null)
 
+  // First element if owner (RLS filters it out for others)
+  const pendingMovie = computed(() => pendingDraw.value?.pending_movie[0] ?? null)
+
   async function load() {
     const { data } = await supabase
       .from('pending_draw')
-      .select('*, profiles(name)')
+      .select('*, profiles(name), pending_movie(tmdb_id, title)')
       .limit(1)
       .maybeSingle()
     pendingDraw.value = (data as PendingDraw) ?? null
@@ -26,10 +29,20 @@ export function usePendingDraw() {
 
   async function setFilm(tmdbId: number, title: string) {
     if (!pendingDraw.value) return
+    await supabase
+      .from('pending_movie')
+      .delete()
+      .eq('pending_draw_id', pendingDraw.value.id)
+
     const { error } = await supabase
-      .from('pending_draw')
-      .update({ tmdb_id: tmdbId, title })
-      .eq('id', pendingDraw.value.id)
+      .from('pending_movie')
+      .insert({
+        pending_draw_id: pendingDraw.value.id,
+        profile_id: pendingDraw.value.profile_id,
+        tmdb_id: tmdbId,
+        title
+      })
+
     if (!error) await load()
     return { error }
   }
@@ -37,9 +50,10 @@ export function usePendingDraw() {
   async function clearFilm() {
     if (!pendingDraw.value) return
     const { error } = await supabase
-      .from('pending_draw')
-      .update({ tmdb_id: null, title: null })
-      .eq('id', pendingDraw.value.id)
+      .from('pending_movie')
+      .delete()
+      .eq('pending_draw_id', pendingDraw.value.id)
+
     if (!error) await load()
     return { error }
   }
@@ -50,5 +64,5 @@ export function usePendingDraw() {
     pendingDraw.value = null
   }
 
-  return { pendingDraw, load, save, setFilm, clearFilm, remove }
+  return { pendingDraw, pendingMovie, load, save, setFilm, clearFilm, remove }
 }
