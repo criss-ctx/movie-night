@@ -37,7 +37,8 @@
             <span v-if="movie.runtime" class="movie-meta-item">{{ formattedRuntime }}</span>
           </div>
 
-          <div v-if="movie.genres.length" class="movie-genres">
+          <div v-if="movie.genres.length || hasWarning" class="movie-genres">
+            <span v-if="hasWarning" class="movie-genre-warning">⚠ Genre déconseillé</span>
             <span v-for="genre in movie.genres" :key="genre.id" class="movie-genre-tag">{{ genre.name }}</span>
           </div>
 
@@ -50,17 +51,29 @@
         </div>
       </div>
 
-      <p v-else class="movie-error">Impossible de charger ce film.</p>
+      <button
+        v-if="pendingDraw && movie"
+        class="choose-btn"
+        :class="{ 'choose-btn--chosen': isChosen }"
+        @click="handleChoose"
+      >
+        {{ isChosen ? 'Retirer ce film' : 'Choisir ce film' }}
+      </button>
+
+      <p v-if="!pending && !movie" class="movie-error">Impossible de charger ce film.</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { TmdbMovieDetail } from '~/types'
+import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
 
 const router = useRouter()
 const route = useRoute()
 const { getMovieDetail, getPosterUrl } = useTmdb()
+const { pendingDraw, load: loadPendingDraw, setFilm, clearFilm } = usePendingDraw()
+const { requireAuth } = useAuth()
 
 const { data: movie, pending } = await useAsyncData<TmdbMovieDetail>(
   `movie-${route.params.id}`,
@@ -80,6 +93,22 @@ const formattedRuntime = computed(() => {
   const m = movie.value.runtime % 60
   return h > 0 ? `${h}h${m > 0 ? String(m).padStart(2, '0') : ''}` : `${m}min`
 })
+
+const isChosen = computed(() => pendingDraw.value?.tmdb_id === movie.value?.id)
+const hasWarning = computed(() => movie.value?.genres.some(g => TMDB_WARNING_GENRES.includes(g.id)) ?? false)
+
+async function handleChoose() {
+  if (!movie.value) return
+  await requireAuth(async () => {
+    if (isChosen.value) {
+      await clearFilm()
+    } else {
+      await setFilm(movie.value!.id, movie.value!.title)
+    }
+  })
+}
+
+await loadPendingDraw()
 </script>
 
 <style scoped>
@@ -203,6 +232,18 @@ const formattedRuntime = computed(() => {
   padding: 3px 10px;
 }
 
+.movie-genre-warning {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f5a623;
+  background: rgba(245, 166, 35, 0.08);
+  border: 1px solid rgba(245, 166, 35, 0.4);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
 .movie-rating {
   display: flex;
   align-items: baseline;
@@ -227,5 +268,32 @@ const formattedRuntime = computed(() => {
   line-height: 1.75;
   color: var(--text-secondary);
   margin: 0;
+}
+
+.choose-btn {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 12px;
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+
+.choose-btn--chosen {
+  background: var(--surface);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .choose-btn:not(.choose-btn--chosen):hover { opacity: 0.88; }
 }
 </style>

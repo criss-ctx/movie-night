@@ -18,6 +18,8 @@ export interface PendingDraw {
   profile_id: number | null
   year: number
   drawn_at: string
+  tmdb_id: number | null
+  title: string | null
   profiles: { name: string } | null
 }
 

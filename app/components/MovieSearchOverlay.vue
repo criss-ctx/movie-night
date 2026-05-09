@@ -26,6 +26,7 @@
               @click="$emit('select', movie)"
             >
               <span class="result-title">{{ movie.title }}</span>
+              <span v-if="TMDB_WARNING_GENRES.some(id => movie.genre_ids?.includes(id))" class="result-genre-warning" title="Genre déconseillé">⚠</span>
               <span class="result-year">{{ movie.release_date?.split('-')[0] ?? '—' }}</span>
             </button>
           </template>
@@ -46,10 +47,12 @@
 
 <script setup lang="ts">
 import type { TmdbMovie } from '~/types'
+import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
 
 const props = defineProps<{
   visible: boolean
   initialQuery: string
+  year?: number
 }>()
 
 const emit = defineEmits<{
@@ -88,7 +91,7 @@ function onQueryInput() {
 
   isSearching.value = true
   debounceTimer = setTimeout(async () => {
-    const response = await searchMovies(query.value)
+    const response = await searchMovies(query.value, props.year)
     results.value = response.results.slice(0, 6)
     isSearching.value = false
   }, 400)
@@ -217,6 +220,12 @@ function onQueryInput() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.result-genre-warning {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #f5a623;
 }
 
 .result-year {

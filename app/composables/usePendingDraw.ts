@@ -24,11 +24,31 @@ export function usePendingDraw() {
     return { error }
   }
 
+  async function setFilm(tmdbId: number, title: string) {
+    if (!pendingDraw.value) return
+    const { error } = await supabase
+      .from('pending_draw')
+      .update({ tmdb_id: tmdbId, title })
+      .eq('id', pendingDraw.value.id)
+    if (!error) await load()
+    return { error }
+  }
+
+  async function clearFilm() {
+    if (!pendingDraw.value) return
+    const { error } = await supabase
+      .from('pending_draw')
+      .update({ tmdb_id: null, title: null })
+      .eq('id', pendingDraw.value.id)
+    if (!error) await load()
+    return { error }
+  }
+
   async function remove() {
     if (!pendingDraw.value) return
     await supabase.from('pending_draw').delete().eq('id', pendingDraw.value.id)
     pendingDraw.value = null
   }
 
-  return { pendingDraw, load, save, remove }
+  return { pendingDraw, load, save, setFilm, clearFilm, remove }
 }

@@ -44,6 +44,30 @@
                 <path d="M7 8h10M7 12h10M7 16h6"/>
               </svg>
             </div>
+            <template v-if="TMDB_WARNING_GENRES.some(id => movie.genre_ids.includes(id))">
+              <button
+                class="genre-warning"
+                @click.prevent.stop="toggleWarning(movie.id)"
+                aria-label="Genre déconseillé"
+              >⚠</button>
+              <div
+                class="genre-warning-overlay"
+                :class="{ 'genre-warning-overlay--active': activeWarningId === movie.id }"
+              >Genre déconseillé</div>
+            </template>
+            <span
+              v-if="watchedTmdbIds.has(movie.id)"
+              class="card-seen-badge"
+              title="Déjà vu"
+              aria-label="Déjà vu"
+            >vu</span>
+            <button
+              v-if="pendingDraw"
+              class="card-choose-btn"
+              :class="{ 'card-choose-btn--chosen': pendingDraw.tmdb_id === movie.id }"
+              :title="pendingDraw.tmdb_id === movie.id ? 'Film sélectionné' : 'Choisir ce film'"
+              @click.prevent.stop="toggleFilm(movie)"
+            >{{ pendingDraw.tmdb_id === movie.id ? '✓' : '+' }}</button>
           </div>
           <div class="movie-card-info">
             <span class="movie-card-title">{{ movie.title }}</span>
@@ -64,6 +88,15 @@
 
 <script setup lang="ts">
 import type { TmdbMovie, TmdbDiscoverResponse } from '~/types'
+import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
+
+const { pendingDraw, load: loadPendingDraw, setFilm, clearFilm } = usePendingDraw()
+const { entries: journalEntries, load: loadJournal } = useJournal()
+const { requireAuth } = useAuth()
+
+await Promise.all([loadPendingDraw(), loadJournal()])
+
+const watchedTmdbIds = computed(() => new Set(journalEntries.value.map(e => e.tmdb_id).filter(Boolean)))
 
 const router = useRouter()
 const route = useRoute()
@@ -72,11 +105,16 @@ const { discoverMovies, getPosterUrl } = useTmdb()
 const year = Number(route.params.year)
 
 const filters = [
-  { key: 'popular',   label: 'Populaires',   sort_by: 'popularity.desc',    vote_count_gte: undefined, with_genres: undefined },
-  { key: 'top_rated', label: 'Mieux notés',   sort_by: 'vote_average.desc',  vote_count_gte: 100,       with_genres: undefined },
-  { key: 'revenue',   label: 'Box-office',    sort_by: 'revenue.desc',       vote_count_gte: undefined, with_genres: undefined },
-  { key: 'drama',     label: 'Drama',         sort_by: 'popularity.desc',    vote_count_gte: undefined, with_genres: '18' },
-  { key: 'comedy',    label: 'Comédie',       sort_by: 'popularity.desc',    vote_count_gte: undefined, with_genres: '35' },
+  { key: 'popular',   label: 'Populaires',      sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: undefined,  with_original_language: undefined },
+  { key: 'top_rated', label: 'Mieux notés',      sort_by: 'vote_average.desc', vote_count_gte: 100,       vote_average_gte: undefined, with_genres: undefined,  with_original_language: undefined },
+  { key: 'revenue',   label: 'Box-office',       sort_by: 'revenue.desc',      vote_count_gte: undefined, vote_average_gte: undefined, with_genres: undefined,  with_original_language: undefined },
+  { key: 'gems',      label: 'Pépites',          sort_by: 'vote_average.desc', vote_count_gte: 20,        vote_average_gte: 7,         with_genres: undefined,  with_original_language: undefined },
+  { key: 'french',    label: 'Films français',   sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: undefined,  with_original_language: 'fr' },
+  { key: 'action',    label: 'Action',           sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '28',       with_original_language: undefined },
+  { key: 'thriller',  label: 'Thriller',         sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '53',       with_original_language: undefined },
+  { key: 'scifi',     label: 'Sci-fi',           sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '878',      with_original_language: undefined },
+  { key: 'drama',     label: 'Drame',            sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '18',       with_original_language: undefined },
+  { key: 'comedy',    label: 'Comédie',          sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '35',       with_original_language: undefined },
 ]
 
 const activeFilter = ref(filters[0])
@@ -93,6 +131,8 @@ const { data, pending, refresh } = await useAsyncData<TmdbDiscoverResponse>(
     sort_by: activeFilter.value.sort_by,
     with_genres: activeFilter.value.with_genres,
     vote_count_gte: activeFilter.value.vote_count_gte,
+    vote_average_gte: activeFilter.value.vote_average_gte,
+    with_original_language: activeFilter.value.with_original_language,
     page: 1,
   })
 )
@@ -119,6 +159,8 @@ async function loadMore() {
     sort_by: activeFilter.value.sort_by,
     with_genres: activeFilter.value.with_genres,
     vote_count_gte: activeFilter.value.vote_count_gte,
+    vote_average_gte: activeFilter.value.vote_average_gte,
+    with_original_language: activeFilter.value.with_original_language,
     page: page.value,
   })
   movies.value = [...movies.value, ...more.results]
@@ -137,7 +179,31 @@ onMounted(() => {
 
 onUnmounted(() => {
   observer?.disconnect()
+  if (warningTimer) clearTimeout(warningTimer)
 })
+
+const activeWarningId = ref<number | null>(null)
+let warningTimer: ReturnType<typeof setTimeout> | null = null
+
+function toggleWarning(movieId: number) {
+  if (warningTimer) clearTimeout(warningTimer)
+  if (activeWarningId.value === movieId) {
+    activeWarningId.value = null
+  } else {
+    activeWarningId.value = movieId
+    warningTimer = setTimeout(() => { activeWarningId.value = null }, 2500)
+  }
+}
+
+async function toggleFilm(movie: TmdbMovie) {
+  await requireAuth(async () => {
+    if (pendingDraw.value?.tmdb_id === movie.id) {
+      await clearFilm()
+    } else {
+      await setFilm(movie.id, movie.title)
+    }
+  })
+}
 </script>
 
 <style scoped>
@@ -167,6 +233,13 @@ onUnmounted(() => {
 
 .discover-filters::-webkit-scrollbar {
   display: none;
+}
+
+@media (hover: hover) {
+  .discover-filters {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
 }
 
 .discover-filter-btn {
@@ -211,11 +284,103 @@ onUnmounted(() => {
 }
 
 .movie-card-poster-wrap {
+  position: relative;
   aspect-ratio: 2/3;
   border-radius: var(--r-sm);
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
+}
+
+.genre-warning {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #f5a623;
+  border: 1.5px solid rgba(245, 166, 35, 0.6);
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+.genre-warning-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  color: #f5a623;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 7px 4px;
+  z-index: 1;
+}
+
+@media (hover: hover) {
+  .movie-card-poster-wrap:has(.genre-warning:hover) .genre-warning-overlay { display: flex; }
+}
+
+.genre-warning-overlay--active { display: flex; }
+
+.card-choose-btn {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: background 150ms, border-color 150ms;
+}
+
+.card-choose-btn--chosen {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.card-seen-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 3px 7px;
+  line-height: 1;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
 }
 
 .movie-card-poster {

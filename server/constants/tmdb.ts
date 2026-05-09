@@ -1,0 +1,5 @@
+export const TMDB_GENRE_HORROR = 27
+export const TMDB_GENRE_TV_MOVIE = 10770
+
+export const TMDB_EXCLUDED_GENRES = [TMDB_GENRE_TV_MOVIE].join(',')
+export const TMDB_WARNING_GENRES = [TMDB_GENRE_HORROR]
