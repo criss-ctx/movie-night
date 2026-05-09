@@ -68,6 +68,14 @@
 
 - `EditEntryModal.vue` — dropdown TMDB affiché au-dessus du champ titre (`:deep(.search-dropdown)` avec `bottom: calc(100% + 4px)`) pour ne pas être masqué par le clavier virtuel mobile
 
+### 9 mai 2026 (suite) — Identités & authentification magic link
+
+- **`profiles`** — ajout colonnes `user_id UUID` (lien vers `auth.users`) et `is_admin BOOLEAN` ; 4 comptes Supabase Auth créés et liés ; Chris (id=3) marqué admin
+- **Fonction SQL `is_admin()`** — helper `SECURITY DEFINER` réutilisé dans toutes les RLS
+- **RLS renforcées** — `journal` et `pending_draw` UPDATE/DELETE : owner ou admin uniquement ; INSERT : UUID doit correspondre à un profil connu (`shouldCreateUser: false` côté client)
+- **Magic link** — `useAuth.ts` : `signInWithOtp` remplace `signInWithPassword` ; watcher sur `user` pour exécuter l'action en attente si le lien est cliqué dans le même onglet
+- **`LoginModal.vue`** — plus de champ password ; état `emailSent` affiche un message de confirmation après envoi
+
 ### 9 mai 2026 — TMDB étendu, tirage enrichi, badges
 
 - **Fix** — cache TMDB stale sur `/entry/[id]` : `refresh()` appelé après save dans `handleModify`
@@ -100,7 +108,7 @@
 - **Frontend** — Vue 3 + Nuxt 4 + TypeScript, déployé sur Vercel
 - **Base de données** — Supabase (PostgreSQL) avec RLS
 - **API tierce** — TMDB (token côté serveur via `runtimeConfig`)
-- **Authentification** — Supabase Auth (email + magic link prévu)
+- **Authentification** — Supabase Auth, magic link (`signInWithOtp`)
 
 ### Structure du projet
 
@@ -155,7 +163,7 @@ movie-night/
 ### Supabase — tables
 
 - `journal` — id, title, release_year, profile_id (FK), watch_date, tmdb_id (nullable)
-- `profiles` — id, name — RLS lecture publique, écriture authentifiée
+- `profiles` — id, name, user_id (FK → auth.users), is_admin — RLS lecture publique ; écriture owner ou admin
 - `pending_draw` — id, profile_id (FK, on delete set null), year, drawn_at, tmdb_id (nullable), title (nullable) — un seul enregistrement actif
 
 ### Workflow git
@@ -176,7 +184,9 @@ movie-night/
 
 ## À faire
 
-- **Magic link** — expliquer le concept, décider si on l'adopte
+> Voir **[PLAN_AUTH_IDENTITES.md](./PLAN_AUTH_IDENTITES.md)** pour le plan détaillé et l'état d'avancement du refactoring identités/auth (4 phases : liaison profils↔auth, magic link, film secret, votes).
+
+- **Identités & données privées** — 4 phases planifiées dans `PLAN_AUTH_IDENTITES.md` *(en cours)*
 - **Votes / notes** — table `votes` (profile_id, journal_id, rating) → affichage sur la fiche `/entry/[id]`
 - **Stats** — section dédiée : films par personne, moyenne des notes, années préférées
 - **Multi-groupes** — plusieurs groupes avec journaux isolés (Nuxt layers + RLS Supabase par groupe)
