@@ -44,6 +44,7 @@
                 <path d="M7 8h10M7 12h10M7 16h6"/>
               </svg>
             </div>
+            <span v-if="TMDB_WARNING_GENRES.some(id => movie.genre_ids.includes(id))" class="genre-warning" title="Film d'horreur">⚠</span>
           </div>
           <div class="movie-card-info">
             <span class="movie-card-title">{{ movie.title }}</span>
@@ -64,6 +65,7 @@
 
 <script setup lang="ts">
 import type { TmdbMovie, TmdbDiscoverResponse } from '~/types'
+import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
 
 const router = useRouter()
 const route = useRoute()
@@ -72,11 +74,16 @@ const { discoverMovies, getPosterUrl } = useTmdb()
 const year = Number(route.params.year)
 
 const filters = [
-  { key: 'popular',   label: 'Populaires',   sort_by: 'popularity.desc',    vote_count_gte: undefined, with_genres: undefined },
-  { key: 'top_rated', label: 'Mieux notés',   sort_by: 'vote_average.desc',  vote_count_gte: 100,       with_genres: undefined },
-  { key: 'revenue',   label: 'Box-office',    sort_by: 'revenue.desc',       vote_count_gte: undefined, with_genres: undefined },
-  { key: 'drama',     label: 'Drama',         sort_by: 'popularity.desc',    vote_count_gte: undefined, with_genres: '18' },
-  { key: 'comedy',    label: 'Comédie',       sort_by: 'popularity.desc',    vote_count_gte: undefined, with_genres: '35' },
+  { key: 'popular',   label: 'Populaires',      sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: undefined,  with_original_language: undefined },
+  { key: 'top_rated', label: 'Mieux notés',      sort_by: 'vote_average.desc', vote_count_gte: 100,       vote_average_gte: undefined, with_genres: undefined,  with_original_language: undefined },
+  { key: 'revenue',   label: 'Box-office',       sort_by: 'revenue.desc',      vote_count_gte: undefined, vote_average_gte: undefined, with_genres: undefined,  with_original_language: undefined },
+  { key: 'gems',      label: 'Pépites',          sort_by: 'vote_average.desc', vote_count_gte: 20,        vote_average_gte: 7,         with_genres: undefined,  with_original_language: undefined },
+  { key: 'french',    label: 'Films français',   sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: undefined,  with_original_language: 'fr' },
+  { key: 'action',    label: 'Action',           sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '28',       with_original_language: undefined },
+  { key: 'thriller',  label: 'Thriller',         sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '53',       with_original_language: undefined },
+  { key: 'scifi',     label: 'Sci-fi',           sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '878',      with_original_language: undefined },
+  { key: 'drama',     label: 'Drame',            sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '18',       with_original_language: undefined },
+  { key: 'comedy',    label: 'Comédie',          sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '35',       with_original_language: undefined },
 ]
 
 const activeFilter = ref(filters[0])
@@ -93,6 +100,8 @@ const { data, pending, refresh } = await useAsyncData<TmdbDiscoverResponse>(
     sort_by: activeFilter.value.sort_by,
     with_genres: activeFilter.value.with_genres,
     vote_count_gte: activeFilter.value.vote_count_gte,
+    vote_average_gte: activeFilter.value.vote_average_gte,
+    with_original_language: activeFilter.value.with_original_language,
     page: 1,
   })
 )
@@ -119,6 +128,8 @@ async function loadMore() {
     sort_by: activeFilter.value.sort_by,
     with_genres: activeFilter.value.with_genres,
     vote_count_gte: activeFilter.value.vote_count_gte,
+    vote_average_gte: activeFilter.value.vote_average_gte,
+    with_original_language: activeFilter.value.with_original_language,
     page: page.value,
   })
   movies.value = [...movies.value, ...more.results]
@@ -169,6 +180,13 @@ onUnmounted(() => {
   display: none;
 }
 
+@media (hover: hover) {
+  .discover-filters {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
 .discover-filter-btn {
   flex-shrink: 0;
   font-family: var(--font-ui);
@@ -211,11 +229,24 @@ onUnmounted(() => {
 }
 
 .movie-card-poster-wrap {
+  position: relative;
   aspect-ratio: 2/3;
   border-radius: var(--r-sm);
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
+}
+
+.genre-warning {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #f5a623;
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 4px;
 }
 
 .movie-card-poster {

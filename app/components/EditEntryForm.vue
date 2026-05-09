@@ -16,6 +16,7 @@
     <MovieSearchOverlay
       :visible="showOverlay"
       :initialQuery="localTitle"
+      :year="localYear || undefined"
       @select="onMovieSelect"
       @confirm="onTitleConfirm"
       @cancel="showOverlay = false"

@@ -191,6 +191,12 @@ body {
   white-space: nowrap;
 }
 
+.search-result-genre-warning {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #f5a623;
+}
+
 .search-result-year {
   flex-shrink: 0;
   font-size: 13px;

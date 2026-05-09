@@ -1,7 +1,8 @@
 import { getMockSearchResults } from '../../mock/tmdb'
+import { TMDB_EXCLUDED_GENRES } from '../../constants/tmdb'
 
 export default defineEventHandler(async (event) => {
-  const { query } = getQuery(event)
+  const { query, year } = getQuery(event)
 
   if (!query || typeof query !== 'string') {
     throw createError({ statusCode: 400, statusMessage: 'Missing query parameter' })
@@ -13,7 +14,8 @@ export default defineEventHandler(async (event) => {
     return getMockSearchResults(query)
   }
 
-  const url = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=fr-FR&include_adult=false`
+  const yearParam = year ? `&primary_release_year=${year}` : ''
+  const url = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=fr-FR&include_adult=false&without_genres=${TMDB_EXCLUDED_GENRES}${yearParam}`
 
   const data = await $fetch(url, {
     headers: {

@@ -1,15 +1,12 @@
 <template>
   <div class="page-add">
     <div class="form-wrapper">
-      <div
-        v-if="pendingDraw"
-        class="pending-banner visible"
-        @click="prefillFromPendingDraw"
-      >
+      <div v-if="pendingDraw" class="pending-banner visible">
         <p class="pending-banner-label">Tirage en attente</p>
         <p class="pending-banner-info">{{ pendingDraw.profiles?.name ?? '?' }} · {{ pendingDraw.year }}</p>
-        <p class="pending-banner-hint">Appuyer pour pré-remplir le formulaire</p>
-        <button class="pending-banner-delete" aria-label="Annuler ce tirage" @click.stop="handleDeletePendingDraw">&times;</button>
+        <button type="button" class="pending-btn-primary" @click="prefillFromPendingDraw">Pré-remplir le formulaire</button>
+        <NuxtLink :to="`/discover/${pendingDraw.year}`" class="pending-link-secondary">Explorer les films →</NuxtLink>
+        <button class="pending-banner-delete" aria-label="Annuler ce tirage" @click="handleDeletePendingDraw">&times;</button>
       </div>
 
       <h2 class="slide-heading">Ajouter au journal</h2>
@@ -40,6 +37,7 @@
                   @click="selectMovie(movie)"
                 >
                   <span class="search-result-title">{{ movie.title }}</span>
+                  <span v-if="TMDB_WARNING_GENRES.some(id => movie.genre_ids?.includes(id))" class="search-result-genre-warning" title="Film d'horreur">⚠</span>
                   <span class="search-result-year">{{ movie.release_date?.split('-')[0] ?? '—' }}</span>
                 </button>
               </template>
@@ -70,6 +68,7 @@
 
 <script setup lang="ts">
 import type { TmdbMovie } from '~/types'
+import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
 
 const router = useRouter()
 
@@ -109,7 +108,8 @@ function onTitleInput() {
   showDropdown.value = true
 
   debounceTimer = setTimeout(async () => {
-    const response = await searchMovies(q)
+    const year = Number(form.release_year) >= 1888 ? Number(form.release_year) : undefined
+    const response = await searchMovies(q, year)
     searchResults.value = response.results.slice(0, 6)
     isSearching.value = false
   }, 400)
@@ -184,19 +184,17 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
 
 .pending-banner {
   display: none;
-  -webkit-tap-highlight-color: transparent;
   position: relative;
   background: rgba(201, 165, 90, 0.06);
   border: 1px solid rgba(201, 165, 90, 0.4);
   border-radius: var(--r-md);
   padding: 14px 16px;
   margin-bottom: 24px;
-  cursor: pointer;
-  transition: background 150ms;
 }
 
 .pending-banner.visible {
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 .pending-banner-label {
@@ -213,20 +211,41 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
   font-size: 20px;
   font-weight: 600;
   color: var(--text);
-  margin: 0 0 4px;
+  margin: 0;
   letter-spacing: 0.02em;
 }
 
-.pending-banner-hint {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin: 0;
+.pending-btn-primary {
+  width: 100%;
+  margin-top: 14px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: opacity 150ms;
 }
 
 @media (hover: hover) {
-  .pending-banner:hover {
-    background: rgba(201, 165, 90, 0.11);
-  }
+  .pending-btn-primary:hover { opacity: 0.88; }
+}
+
+.pending-link-secondary {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .pending-link-secondary:hover { color: var(--text); }
 }
 
 .pending-banner-delete {
@@ -244,9 +263,7 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
 }
 
 @media (hover: hover) {
-  .pending-banner-delete:hover {
-    color: var(--danger);
-  }
+  .pending-banner-delete:hover { color: var(--danger); }
 }
 
 .journal-form {
