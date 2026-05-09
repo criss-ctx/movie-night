@@ -87,7 +87,7 @@ const { data: entry } = await useAsyncData<JournalEntry | null>(
   () => getEntryById(entryId)
 )
 
-const { data: movie } = await useAsyncData<TmdbMovieDetail | null>(
+const { data: movie, refresh: refreshMovie } = await useAsyncData<TmdbMovieDetail | null>(
   `entry-tmdb-${entryId}`,
   () => entry.value?.tmdb_id ? getMovieDetail(entry.value.tmdb_id) : Promise.resolve(null)
 )
@@ -115,6 +115,7 @@ async function handleModify() {
     if (changes) {
       await update(entryId, changes)
       entry.value = await getEntryById(entryId)
+      await refreshMovie()
     }
   })
 }
