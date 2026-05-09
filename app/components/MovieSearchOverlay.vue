@@ -26,7 +26,7 @@
               @click="$emit('select', movie)"
             >
               <span class="result-title">{{ movie.title }}</span>
-              <span v-if="TMDB_WARNING_GENRES.some(id => movie.genre_ids?.includes(id))" class="result-genre-warning" title="Film d'horreur">⚠</span>
+              <span v-if="TMDB_WARNING_GENRES.some(id => movie.genre_ids?.includes(id))" class="result-genre-warning" title="Genre déconseillé">⚠</span>
               <span class="result-year">{{ movie.release_date?.split('-')[0] ?? '—' }}</span>
             </button>
           </template>

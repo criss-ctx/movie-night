@@ -44,7 +44,30 @@
                 <path d="M7 8h10M7 12h10M7 16h6"/>
               </svg>
             </div>
-            <span v-if="TMDB_WARNING_GENRES.some(id => movie.genre_ids.includes(id))" class="genre-warning" title="Film d'horreur">⚠</span>
+            <template v-if="TMDB_WARNING_GENRES.some(id => movie.genre_ids.includes(id))">
+              <button
+                class="genre-warning"
+                @click.prevent.stop="toggleWarning(movie.id)"
+                aria-label="Genre déconseillé"
+              >⚠</button>
+              <div
+                class="genre-warning-overlay"
+                :class="{ 'genre-warning-overlay--active': activeWarningId === movie.id }"
+              >Genre déconseillé</div>
+            </template>
+            <span
+              v-if="watchedTmdbIds.has(movie.id)"
+              class="card-seen-badge"
+              title="Déjà vu"
+              aria-label="Déjà vu"
+            >vu</span>
+            <button
+              v-if="pendingDraw"
+              class="card-choose-btn"
+              :class="{ 'card-choose-btn--chosen': pendingDraw.tmdb_id === movie.id }"
+              :title="pendingDraw.tmdb_id === movie.id ? 'Film sélectionné' : 'Choisir ce film'"
+              @click.prevent.stop="toggleFilm(movie)"
+            >{{ pendingDraw.tmdb_id === movie.id ? '✓' : '+' }}</button>
           </div>
           <div class="movie-card-info">
             <span class="movie-card-title">{{ movie.title }}</span>
@@ -66,6 +89,14 @@
 <script setup lang="ts">
 import type { TmdbMovie, TmdbDiscoverResponse } from '~/types'
 import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
+
+const { pendingDraw, load: loadPendingDraw, setFilm, clearFilm } = usePendingDraw()
+const { entries: journalEntries, load: loadJournal } = useJournal()
+const { requireAuth } = useAuth()
+
+await Promise.all([loadPendingDraw(), loadJournal()])
+
+const watchedTmdbIds = computed(() => new Set(journalEntries.value.map(e => e.tmdb_id).filter(Boolean)))
 
 const router = useRouter()
 const route = useRoute()
@@ -148,7 +179,31 @@ onMounted(() => {
 
 onUnmounted(() => {
   observer?.disconnect()
+  if (warningTimer) clearTimeout(warningTimer)
 })
+
+const activeWarningId = ref<number | null>(null)
+let warningTimer: ReturnType<typeof setTimeout> | null = null
+
+function toggleWarning(movieId: number) {
+  if (warningTimer) clearTimeout(warningTimer)
+  if (activeWarningId.value === movieId) {
+    activeWarningId.value = null
+  } else {
+    activeWarningId.value = movieId
+    warningTimer = setTimeout(() => { activeWarningId.value = null }, 2500)
+  }
+}
+
+async function toggleFilm(movie: TmdbMovie) {
+  await requireAuth(async () => {
+    if (pendingDraw.value?.tmdb_id === movie.id) {
+      await clearFilm()
+    } else {
+      await setFilm(movie.id, movie.title)
+    }
+  })
+}
 </script>
 
 <style scoped>
@@ -239,14 +294,93 @@ onUnmounted(() => {
 
 .genre-warning {
   position: absolute;
-  top: 5px;
-  left: 5px;
+  top: 6px;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #f5a623;
+  border: 1.5px solid rgba(245, 166, 35, 0.6);
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+.genre-warning-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
   background: rgba(0, 0, 0, 0.72);
   color: #f5a623;
-  font-size: 11px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 7px 4px;
+  z-index: 1;
+}
+
+@media (hover: hover) {
+  .movie-card-poster-wrap:has(.genre-warning:hover) .genre-warning-overlay { display: flex; }
+}
+
+.genre-warning-overlay--active { display: flex; }
+
+.card-choose-btn {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  font-size: 18px;
   line-height: 1;
-  padding: 3px 5px;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: background 150ms, border-color 150ms;
+}
+
+.card-choose-btn--chosen {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.card-seen-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 3px 7px;
+  line-height: 1;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
 }
 
 .movie-card-poster {

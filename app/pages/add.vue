@@ -1,12 +1,42 @@
 <template>
   <div class="page-add">
     <div class="form-wrapper">
-      <div v-if="pendingDraw" class="pending-banner visible">
-        <p class="pending-banner-label">Tirage en attente</p>
-        <p class="pending-banner-info">{{ pendingDraw.profiles?.name ?? '?' }} · {{ pendingDraw.year }}</p>
-        <button type="button" class="pending-btn-primary" @click="prefillFromPendingDraw">Pré-remplir le formulaire</button>
-        <NuxtLink :to="`/discover/${pendingDraw.year}`" class="pending-link-secondary">Explorer les films →</NuxtLink>
-        <button class="pending-banner-delete" aria-label="Annuler ce tirage" @click="handleDeletePendingDraw">&times;</button>
+      <div
+        v-if="pendingDraw"
+        class="pending-shell"
+        :class="{ 'pending-shell--locked-delete': swipeLocked === 'delete' }"
+        @click="handleShellClick"
+      >
+        <!-- Zone droite : annuler le tirage entier (rouge) -->
+        <div class="pending-zone pending-zone--delete" :class="{ 'pending-zone--locked': swipeLocked === 'delete' }" aria-hidden="true">
+          <button class="pending-zone-btn" @click.stop="handleDeletePendingDraw" aria-label="Annuler le tirage">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Zone hover desktop droite -->
+        <div class="pending-desktop-delete-area" @click.stop="handleDeletePendingDraw" aria-label="Annuler le tirage"></div>
+
+        <!-- Face -->
+        <div
+          class="pending-face"
+          :style="swipeStyle"
+          @touchstart.passive="onTouchStart"
+          @touchmove.passive="onTouchMove"
+          @touchend="onTouchEnd"
+        >
+          <p class="pending-banner-label">Tirage en attente</p>
+          <p class="pending-banner-info">
+            {{ pendingDraw.profiles?.name ?? '?' }} · {{ pendingDraw.year }}<template v-if="pendingDraw.title"> · {{ pendingDraw.title }}</template>
+          </p>
+          <button v-if="pendingDraw.title" type="button" class="pending-clear-film-btn" @click.stop="handleClearFilm">retirer ce film</button>
+          <button type="button" class="pending-btn-primary" @click.stop="prefillFromPendingDraw">Pré-remplir le formulaire</button>
+          <NuxtLink :to="`/discover/${pendingDraw.year}`" class="pending-link-secondary">Explorer les films →</NuxtLink>
+        </div>
       </div>
 
       <h2 class="slide-heading">Ajouter au journal</h2>
@@ -37,7 +67,7 @@
                   @click="selectMovie(movie)"
                 >
                   <span class="search-result-title">{{ movie.title }}</span>
-                  <span v-if="TMDB_WARNING_GENRES.some(id => movie.genre_ids?.includes(id))" class="search-result-genre-warning" title="Film d'horreur">⚠</span>
+                  <span v-if="TMDB_WARNING_GENRES.some(id => movie.genre_ids?.includes(id))" class="search-result-genre-warning" title="Genre déconseillé">⚠</span>
                   <span class="search-result-year">{{ movie.release_date?.split('-')[0] ?? '—' }}</span>
                 </button>
               </template>
@@ -74,7 +104,7 @@ const router = useRouter()
 
 const { profiles, load: loadProfiles } = useProfiles()
 const { add: addEntry } = useJournal()
-const { pendingDraw, load: loadPendingDraw, remove: deletePendingDraw } = usePendingDraw()
+const { pendingDraw, load: loadPendingDraw, remove: deletePendingDraw, clearFilm } = usePendingDraw()
 const { requireAuth } = useAuth()
 const { confirm } = useConfirm()
 const { searchMovies } = useTmdb()
@@ -132,6 +162,60 @@ function prefillFromPendingDraw() {
   form.release_year = pendingDraw.value.year
   form.profile_id = pendingDraw.value.profile_id ?? ''
   form.watch_date = new Date().toISOString().split('T')[0] ?? ''
+  if (pendingDraw.value.title) form.title = pendingDraw.value.title
+  if (pendingDraw.value.tmdb_id) form.tmdb_id = pendingDraw.value.tmdb_id
+}
+
+// ── Swipe banner ──────────────────────────────────────────
+const SWIPE_THRESHOLD = 72
+let startX = 0
+let currentDx = 0
+const swipeOffset = ref(0)
+const swipeLocked = ref<'delete' | null>(null)
+const isSwiping = ref(false)
+
+const swipeStyle = computed(() => {
+  if (swipeOffset.value === 0) return {}
+  return {
+    transform: `translateX(${swipeOffset.value}px)`,
+    transition: isSwiping.value ? 'none' : 'transform 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+  }
+})
+
+function onTouchStart(e: TouchEvent) {
+  startX = e.touches[0].clientX
+  currentDx = 0
+  isSwiping.value = true
+}
+
+function onTouchMove(e: TouchEvent) {
+  currentDx = e.touches[0].clientX - startX
+  if (currentDx > 0) { swipeOffset.value = 0; return }
+  swipeOffset.value = Math.max(-SWIPE_THRESHOLD * 1.4, currentDx)
+}
+
+function onTouchEnd() {
+  isSwiping.value = false
+  if (currentDx < -SWIPE_THRESHOLD) {
+    swipeOffset.value = -SWIPE_THRESHOLD
+    swipeLocked.value = 'delete'
+  } else {
+    resetSwipe()
+  }
+}
+
+function resetSwipe() {
+  swipeOffset.value = 0
+  swipeLocked.value = null
+}
+
+function handleShellClick() {
+  if (swipeLocked.value) resetSwipe()
+}
+
+async function handleClearFilm() {
+  resetSwipe()
+  await requireAuth(async () => { await clearFilm() })
 }
 
 async function handleDeletePendingDraw() {
@@ -182,19 +266,79 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
   margin: 0 auto;
 }
 
-.pending-banner {
-  display: none;
+.pending-shell {
   position: relative;
-  background: rgba(201, 165, 90, 0.06);
-  border: 1px solid rgba(201, 165, 90, 0.4);
   border-radius: var(--r-md);
-  padding: 14px 16px;
+  overflow: hidden;
   margin-bottom: 24px;
 }
 
-.pending-banner.visible {
+.pending-shell--locked-delete .pending-face {
+  pointer-events: none;
+}
+
+.pending-zone {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+}
+
+.pending-zone--delete {
+  background: rgba(217, 107, 107, 0.15);
+  justify-content: flex-end;
+  padding-right: 8px;
+}
+
+.pending-zone--locked.pending-zone--delete { background: rgba(217, 107, 107, 0.25); }
+
+.pending-zone-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: transform 150ms;
+}
+
+.pending-zone--delete .pending-zone-btn { color: var(--danger); }
+.pending-zone--locked .pending-zone-btn { transform: scale(1.1); }
+
+.pending-desktop-delete-area {
+  display: none;
+}
+
+@media (hover: hover) {
+  .pending-desktop-delete-area {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 44px;
+    z-index: 2;
+    cursor: pointer;
+  }
+
+  .pending-desktop-delete-area:hover ~ .pending-face { transform: translateX(-52px); }
+
+  .pending-shell--locked-delete .pending-desktop-delete-area { display: none; }
+}
+
+.pending-face {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
+  background: var(--bg);
+  border: 1px solid rgba(201, 165, 90, 0.4);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  transition: transform 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .pending-banner-label {
@@ -213,6 +357,25 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
   color: var(--text);
   margin: 0;
   letter-spacing: 0.02em;
+}
+
+.pending-clear-film-btn {
+  align-self: flex-start;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-faint);
+  background: none;
+  border: none;
+  padding: 6px 0;
+  min-height: 36px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .pending-clear-film-btn:hover { color: var(--danger); }
 }
 
 .pending-btn-primary {
@@ -246,24 +409,6 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
 
 @media (hover: hover) {
   .pending-link-secondary:hover { color: var(--text); }
-}
-
-.pending-banner-delete {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  background: none;
-  border: none;
-  color: var(--text-faint);
-  font-size: 18px;
-  line-height: 1;
-  padding: 4px 6px;
-  cursor: pointer;
-  transition: color 150ms;
-}
-
-@media (hover: hover) {
-  .pending-banner-delete:hover { color: var(--danger); }
 }
 
 .journal-form {
