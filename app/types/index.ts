@@ -3,6 +3,7 @@ export interface Profile {
   name: string
   user_id?: string
   is_admin?: boolean
+  avatar?: string | null
 }
 
 export interface JournalEntry {

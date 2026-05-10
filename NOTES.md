@@ -86,6 +86,7 @@
 - **Icônes SVG** — login/logout dans `default.vue` : icônes stroke-based 18×18 remplaçant les caractères unicode ↩/↪ peu lisibles
 - **Rate limit OTP** — limite au niveau GoTrue (2 emails/h sur le free tier, non éditable) ; résolu en configurant un SMTP custom Gmail (Authentication → Email → SMTP Settings) avec un mot de passe d'application Google — les magic links transitent désormais par `criss.ctx@gmail.com`, sans limite de projet
 - **Fix race condition `pendingAction`** — `useAuth.ts` : action capturée et `pendingAction` mis à `null` *avant* l'`await`, évite que les 3 instances de `watch(user)` (default.vue, add.vue, index.vue) exécutent toutes l'action en simultané → doublons en journal
+- **Page `/confirm`** — `app/pages/confirm.vue` créée manuellement ; `@nuxtjs/supabase` v2 ne la génère pas automatiquement ; `createBrowserClient` de `@supabase/ssr` détecte le `?code=` et échange le token PKCE dès que la page se charge ; redirige vers `/` via `watch(user, ..., { once: true })` dès que la session est établie
 
 ### 9 mai 2026 — TMDB étendu, tirage enrichi, badges
 
@@ -99,6 +100,13 @@
 - **Badge warning ⚠** — icône cercle ambre 26×26px sur les cartes discover et dans la section genres de `/movie/[id]` ; tap mobile = bandeau pleine largeur au bas du poster (2,5s auto-dismiss) ; hover desktop via CSS `:has(.genre-warning:hover)`
 - **Badge "déjà vu"** — pill `vu` en haut-à-droite des cartes discover si le `tmdb_id` du film est déjà dans le journal (`watchedTmdbIds` computed = `Set` pour lookup O(1))
 - **`MovieSearchOverlay.vue`** — overlay plein écran Teleport pour la recherche TMDB dans `EditEntryForm` (slide-up, Escape/backdrop pour fermer, badge ⚠ sur les résultats)
+
+### 10 mai 2026 (suite) — Avatars profils
+
+- **Colonne `avatar TEXT`** — ajoutée à `profiles` (nullable) ; valeur saisie manuellement dans le dashboard Supabase (emoji)
+- **`UserAvatar.vue`** — nouveau composant : affiche l'emoji si défini, sinon les initiales (1-2 lettres) sur fond coloré ; couleur bg et texte dérivées du nom via hash `charCodeAt` → teinte oklch (`oklch(48% 0.14 hue)` bg / `oklch(92% 0.06 hue)` texte) ; uniformité perceptuelle garantie sur toutes les teintes
+- **`default.vue`** — header restructuré : `.header-right` wrapper positionné absolument à droite, contient `UserAvatar` + bouton déconnexion séparés (cliquer sur l'avatar ne déconnecte plus)
+- **Bug fix `.sub` vs `.id`** — `useSupabaseUser()` retourne le payload JWT brut (claim `sub`) plutôt que le type TypeScript `User` (propriété `id`) ; corrigé dans `default.vue` et `index.vue` avec le pattern `(user.value as any).sub ?? user.value.id`
 
 ---
 
@@ -147,7 +155,8 @@ movie-night/
 │   │   ├── EditEntryModal.vue       — Teleport + useState singleton (édition d'entrée)
 │   │   ├── EditEntryForm.vue        — formulaire avec autocomplete TMDB (display:contents)
 │   │   ├── JournalCard.vue          — carte avec swipe mobile + hover desktop
-│   │   └── MovieSearchOverlay.vue   — overlay plein écran recherche TMDB (Teleport, slide-up)
+│   │   ├── MovieSearchOverlay.vue   — overlay plein écran recherche TMDB (Teleport, slide-up)
+│   │   └── UserAvatar.vue           — cercle avatar : emoji ou initiales + couleur oklch déterministe
 │   ├── layouts/
 │   │   └── default.vue              — header + tab bar + footer + modales globales
 │   └── pages/
@@ -155,6 +164,7 @@ movie-night/
 │       ├── journal.vue              — liste filtrée par profil
 │       ├── add.vue                  — formulaire + autocomplete TMDB + bannière tirage (swipe)
 │       ├── about.vue                — attribution TMDB officielle
+│       ├── confirm.vue              — callback PKCE magic link (échange ?code= → session → redirect /)
 │       ├── entry/
 │       │   └── [id].vue             — fiche unifiée (TMDB + fallback) par ID d'entrée Supabase
 │       ├── movie/
@@ -174,7 +184,7 @@ movie-night/
 ### Supabase — tables
 
 - `journal` — id, title, release_year, profile_id (FK), watch_date, tmdb_id (nullable)
-- `profiles` — id, name, user_id (FK → auth.users), is_admin — RLS lecture publique ; écriture owner ou admin
+- `profiles` — id, name, user_id (FK → auth.users), is_admin, avatar (TEXT nullable) — RLS lecture publique ; écriture owner ou admin
 - `pending_draw` — id, profile_id (FK, on delete set null), year, drawn_at, movie_chosen (bool) — un seul enregistrement actif
 - `pending_movie` — id, pending_draw_id (FK cascade), profile_id (FK), tmdb_id, title — RLS owner-only ; visible uniquement par celui qui a choisi le film
 

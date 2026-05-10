@@ -14,9 +14,14 @@ sécuriser le film secret, et poser la fondation du système de votes.
 | 3 | Film secret (`pending_movie`) | 🔶 En test — valider visibilité owner-only ; puis `ALTER TABLE pending_draw DROP COLUMN tmdb_id, DROP COLUMN title` |
 | 4 | Votes / notes | ⬜ À faire |
 
+### Notes Phase 1 (ajouts post-implémentation)
+
+- **`user.value.sub` vs `user.value.id`** — `useSupabaseUser()` de `@nuxtjs/supabase` retourne le payload JWT brut à l'exécution (claim standard `sub`) plutôt que le type TypeScript `User` (propriété `id`). Les RLS Supabase côté serveur utilisent `auth.uid()` et ne sont pas affectées. Côté client, toujours utiliser le pattern `(user.value as any).sub ?? user.value?.id` pour comparer avec `profile.user_id`.
+
 ### Notes Phase 2 (ajouts post-implémentation)
 
-- **Fix PKCE** — `emailRedirectTo` doit pointer sur `/confirm` (pas juste `window.location.origin`) pour que `@nuxtjs/supabase` échange le code PKCE et établisse une session persistante avec refresh silencieux
+- **Fix PKCE** — `emailRedirectTo` doit pointer sur `/confirm` (pas juste `window.location.origin`) pour que `@supabase/ssr` échange le code PKCE et établisse une session persistante avec refresh silencieux
+- **Page `/confirm`** — à créer manuellement (`app/pages/confirm.vue`) ; `@nuxtjs/supabase` v2 ne la génère pas ; le module attend juste que la page existe pour que `createBrowserClient` intercepte le `?code=` et appelle `exchangeCodeForSession`
 - **Rate limit** — limite GoTrue à 2 emails/h sur le free tier (non éditable) ; résolu avec SMTP custom Gmail + mot de passe d'application Google
 - **`shouldCreateUser: false`** — emails inconnus rejetés silencieusement par Supabase (pas de nouveaux comptes créés)
 

@@ -51,7 +51,7 @@ const selectedProfileId = ref<number | null>(null)
 // Pre-select the logged-in user's profile if found
 watch([user, profiles], () => {
   if (!selectedProfileId.value && user.value) {
-    const mine = profiles.value.find(p => p.user_id === user.value!.id)
+    const mine = profiles.value.find(p => p.user_id === ((user.value as any).sub ?? user.value!.id))
     if (mine) selectedProfileId.value = mine.id
   }
 }, { immediate: true })
