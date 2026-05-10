@@ -9,7 +9,7 @@
       >
         <button class="login-close" aria-label="Fermer" @click="dismissLogin">&times;</button>
         <h1 id="login-modal-title" class="login-title">Movie Night</h1>
-        <form class="login-form" @submit.prevent="handleSubmit">
+        <form v-if="!emailSent" class="login-form" @submit.prevent="handleSubmit">
           <div class="form-group">
             <label for="login-email">Email</label>
             <input
@@ -21,20 +21,10 @@
               autocomplete="email"
             />
           </div>
-          <div class="form-group">
-            <label for="login-password">Mot de passe</label>
-            <input
-              id="login-password"
-              v-model="password"
-              type="password"
-              placeholder="••••••••"
-              required
-              autocomplete="current-password"
-            />
-          </div>
           <p class="login-error">{{ errorMessage }}</p>
-          <button type="submit" class="form-submit">Se connecter</button>
+          <button type="submit" class="form-submit">Envoyer le lien</button>
         </form>
+        <p v-else>Vérifie ta boîte mail, le lien arrive !</p>
       </div>
     </div>
   </Teleport>
@@ -44,23 +34,30 @@
 const { showLoginModal, signIn, dismissLogin } = useAuth()
 
 const email = ref('')
-const password = ref('')
 const errorMessage = ref('')
+const emailSent = ref(false)
 
 async function handleSubmit() {
   errorMessage.value = ''
-  const { error } = await signIn(email.value, password.value)
+  const { error } = await signIn(email.value)
   if (error) {
-    errorMessage.value = 'Email ou mot de passe incorrect.'
+    errorMessage.value = 'Une erreur est survenue, réessaie.'
   } else {
-    email.value = ''
-    password.value = ''
+    emailSent.value = true
   }
 }
 
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && showLoginModal.value) dismissLogin()
 }
+
+watch(showLoginModal, (visible) => {
+  if (!visible) {
+    email.value = ''
+    errorMessage.value = ''
+    emailSent.value = false
+  }
+})
 
 onMounted(() => document.addEventListener('keydown', onKeydown))
 onUnmounted(() => document.removeEventListener('keydown', onKeydown))

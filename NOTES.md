@@ -68,6 +68,26 @@
 
 - `EditEntryModal.vue` — dropdown TMDB affiché au-dessus du champ titre (`:deep(.search-dropdown)` avec `bottom: calc(100% + 4px)`) pour ne pas être masqué par le clavier virtuel mobile
 
+### 9 mai 2026 — Identités & authentification magic link
+
+- **`profiles`** — ajout colonnes `user_id UUID` (lien vers `auth.users`) et `is_admin BOOLEAN` ; 4 comptes Supabase Auth créés et liés ; Chris (id=3) marqué admin
+- **Fonction SQL `is_admin()`** — helper `SECURITY DEFINER` réutilisé dans toutes les RLS
+- **RLS renforcées** — `journal` et `pending_draw` UPDATE/DELETE : owner ou admin uniquement ; INSERT relaxé à `auth.role() = 'authenticated'` (un owner peut ajouter pour n'importe quel profil)
+- **Magic link** — `useAuth.ts` : `signInWithOtp` remplace `signInWithPassword` ; `shouldCreateUser: false` rejette silencieusement les emails inconnus ; watcher sur `user` pour exécuter l'action en attente si le lien est cliqué dans le même onglet
+- **`LoginModal.vue`** — plus de champ password ; état `emailSent` (mis à `true` uniquement en succès) affiche un message de confirmation après envoi
+
+### 10 mai 2026 — Film secret, PKCE, icônes auth
+
+- **Table `pending_movie`** — nouvelle table (tmdb_id, title, pending_draw_id, profile_id) avec RLS owner-only ; remplace les colonnes `tmdb_id`/`title` de `pending_draw` (à supprimer après validation avec `ALTER TABLE pending_draw DROP COLUMN tmdb_id, DROP COLUMN title`)
+- **`movie_chosen BOOLEAN`** — ajouté à `pending_draw` : indicateur public qu'un film a été choisi, sans révéler lequel
+- **GRANT sur `pending_movie`** — `GRANT SELECT ON pending_movie TO anon` nécessaire même avec RLS pour que le join Supabase ne retourne pas 403
+- **`isAdmin` computed** — `add.vue` : admin peut "annuler le choix" d'un film choisi par un autre utilisateur, sans voir lequel
+- **Fix PKCE** — `emailRedirectTo` corrigé de `window.location.origin` à `${window.location.origin}/confirm` dans `useAuth.ts` ; `@nuxtjs/supabase` utilise le flux PKCE qui exige que le code d'auth arrive sur la route `/confirm` pour établir la session et activer le refresh silencieux — sans ce fix les sessions expiraient après ~1h
+- **Icônes SVG** — login/logout dans `default.vue` : icônes stroke-based 18×18 remplaçant les caractères unicode ↩/↪ peu lisibles
+- **Rate limit OTP** — limite au niveau GoTrue (2 emails/h sur le free tier, non éditable) ; résolu en configurant un SMTP custom Gmail (Authentication → Email → SMTP Settings) avec un mot de passe d'application Google — les magic links transitent désormais par `criss.ctx@gmail.com`, sans limite de projet
+- **Fix race condition `pendingAction`** — `useAuth.ts` : action capturée et `pendingAction` mis à `null` *avant* l'`await`, évite que les 3 instances de `watch(user)` (default.vue, add.vue, index.vue) exécutent toutes l'action en simultané → doublons en journal
+- **Page `/confirm`** — `app/pages/confirm.vue` créée manuellement ; `@nuxtjs/supabase` v2 ne la génère pas automatiquement ; `createBrowserClient` de `@supabase/ssr` détecte le `?code=` et échange le token PKCE dès que la page se charge ; redirige vers `/` via `watch(user, ..., { once: true })` dès que la session est établie
+
 ### 9 mai 2026 — TMDB étendu, tirage enrichi, badges
 
 - **Fix** — cache TMDB stale sur `/entry/[id]` : `refresh()` appelé après save dans `handleModify`
@@ -80,6 +100,13 @@
 - **Badge warning ⚠** — icône cercle ambre 26×26px sur les cartes discover et dans la section genres de `/movie/[id]` ; tap mobile = bandeau pleine largeur au bas du poster (2,5s auto-dismiss) ; hover desktop via CSS `:has(.genre-warning:hover)`
 - **Badge "déjà vu"** — pill `vu` en haut-à-droite des cartes discover si le `tmdb_id` du film est déjà dans le journal (`watchedTmdbIds` computed = `Set` pour lookup O(1))
 - **`MovieSearchOverlay.vue`** — overlay plein écran Teleport pour la recherche TMDB dans `EditEntryForm` (slide-up, Escape/backdrop pour fermer, badge ⚠ sur les résultats)
+
+### 10 mai 2026 (suite) — Avatars profils
+
+- **Colonne `avatar TEXT`** — ajoutée à `profiles` (nullable) ; valeur saisie manuellement dans le dashboard Supabase (emoji)
+- **`UserAvatar.vue`** — nouveau composant : affiche l'emoji si défini, sinon les initiales (1-2 lettres) sur fond coloré ; couleur bg et texte dérivées du nom via hash `charCodeAt` → teinte oklch (`oklch(48% 0.14 hue)` bg / `oklch(92% 0.06 hue)` texte) ; uniformité perceptuelle garantie sur toutes les teintes
+- **`default.vue`** — header restructuré : `.header-right` wrapper positionné absolument à droite, contient `UserAvatar` + bouton déconnexion séparés (cliquer sur l'avatar ne déconnecte plus)
+- **Bug fix `.sub` vs `.id`** — `useSupabaseUser()` retourne le payload JWT brut (claim `sub`) plutôt que le type TypeScript `User` (propriété `id`) ; corrigé dans `default.vue` et `index.vue` avec le pattern `(user.value as any).sub ?? user.value.id`
 
 ---
 
@@ -100,7 +127,7 @@
 - **Frontend** — Vue 3 + Nuxt 4 + TypeScript, déployé sur Vercel
 - **Base de données** — Supabase (PostgreSQL) avec RLS
 - **API tierce** — TMDB (token côté serveur via `runtimeConfig`)
-- **Authentification** — Supabase Auth (email + magic link prévu)
+- **Authentification** — Supabase Auth, magic link (`signInWithOtp`)
 
 ### Structure du projet
 
@@ -128,7 +155,8 @@ movie-night/
 │   │   ├── EditEntryModal.vue       — Teleport + useState singleton (édition d'entrée)
 │   │   ├── EditEntryForm.vue        — formulaire avec autocomplete TMDB (display:contents)
 │   │   ├── JournalCard.vue          — carte avec swipe mobile + hover desktop
-│   │   └── MovieSearchOverlay.vue   — overlay plein écran recherche TMDB (Teleport, slide-up)
+│   │   ├── MovieSearchOverlay.vue   — overlay plein écran recherche TMDB (Teleport, slide-up)
+│   │   └── UserAvatar.vue           — cercle avatar : emoji ou initiales + couleur oklch déterministe
 │   ├── layouts/
 │   │   └── default.vue              — header + tab bar + footer + modales globales
 │   └── pages/
@@ -136,6 +164,7 @@ movie-night/
 │       ├── journal.vue              — liste filtrée par profil
 │       ├── add.vue                  — formulaire + autocomplete TMDB + bannière tirage (swipe)
 │       ├── about.vue                — attribution TMDB officielle
+│       ├── confirm.vue              — callback PKCE magic link (échange ?code= → session → redirect /)
 │       ├── entry/
 │       │   └── [id].vue             — fiche unifiée (TMDB + fallback) par ID d'entrée Supabase
 │       ├── movie/
@@ -155,8 +184,9 @@ movie-night/
 ### Supabase — tables
 
 - `journal` — id, title, release_year, profile_id (FK), watch_date, tmdb_id (nullable)
-- `profiles` — id, name — RLS lecture publique, écriture authentifiée
-- `pending_draw` — id, profile_id (FK, on delete set null), year, drawn_at, tmdb_id (nullable), title (nullable) — un seul enregistrement actif
+- `profiles` — id, name, user_id (FK → auth.users), is_admin, avatar (TEXT nullable) — RLS lecture publique ; écriture owner ou admin
+- `pending_draw` — id, profile_id (FK, on delete set null), year, drawn_at, movie_chosen (bool) — un seul enregistrement actif
+- `pending_movie` — id, pending_draw_id (FK cascade), profile_id (FK), tmdb_id, title — RLS owner-only ; visible uniquement par celui qui a choisi le film
 
 ### Workflow git
 
@@ -176,7 +206,9 @@ movie-night/
 
 ## À faire
 
-- **Magic link** — expliquer le concept, décider si on l'adopte
+> Voir **[PLAN_AUTH_IDENTITES.md](./PLAN_AUTH_IDENTITES.md)** pour le plan détaillé et l'état d'avancement du refactoring identités/auth (4 phases : liaison profils↔auth, magic link, film secret, votes).
+
+- **Identités & données privées** — 4 phases planifiées dans `PLAN_AUTH_IDENTITES.md` *(en cours)*
 - **Votes / notes** — table `votes` (profile_id, journal_id, rating) → affichage sur la fiche `/entry/[id]`
 - **Stats** — section dédiée : films par personne, moyenne des notes, années préférées
 - **Multi-groupes** — plusieurs groupes avec journaux isolés (Nuxt layers + RLS Supabase par groupe)

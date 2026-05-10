@@ -1,6 +1,9 @@
 export interface Profile {
   id: number
   name: string
+  user_id?: string
+  is_admin?: boolean
+  avatar?: string | null
 }
 
 export interface JournalEntry {
@@ -13,14 +16,19 @@ export interface JournalEntry {
   profiles: { name: string } | null
 }
 
+export interface PendingMovie {
+  tmdb_id: number
+  title: string
+}
+
 export interface PendingDraw {
   id: number
   profile_id: number | null
   year: number
   drawn_at: string
-  tmdb_id: number | null
-  title: string | null
+  movie_chosen: boolean
   profiles: { name: string } | null
+  pending_movie: PendingMovie[]
 }
 
 export interface TmdbMovie {

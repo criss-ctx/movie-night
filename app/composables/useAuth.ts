@@ -4,6 +4,16 @@ export function useAuth() {
   const showLoginModal = useState('showLoginModal', () => false)
   const pendingAction = useState<(() => Promise<void>) | null>('pendingAction', () => null)
 
+  // Auto-execute pending action when session opens in the same tab
+  watch(user, async (newUser) => {
+    if (newUser && pendingAction.value) {
+      const action = pendingAction.value
+      pendingAction.value = null
+      showLoginModal.value = false
+      await action()
+    }
+  })
+
   async function requireAuth(action: () => Promise<void>) {
     if (user.value) {
       await action()
@@ -13,15 +23,14 @@ export function useAuth() {
     }
   }
 
-  async function signIn(email: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (!error) {
-      showLoginModal.value = false
-      if (pendingAction.value) {
-        await pendingAction.value()
-        pendingAction.value = null
+  async function signIn(email: string) {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/confirm`,
+        shouldCreateUser: false
       }
-    }
+    })
     return { error }
   }
 

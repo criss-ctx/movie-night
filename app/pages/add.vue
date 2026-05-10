@@ -31,9 +31,10 @@
         >
           <p class="pending-banner-label">Tirage en attente</p>
           <p class="pending-banner-info">
-            {{ pendingDraw.profiles?.name ?? '?' }} · {{ pendingDraw.year }}<template v-if="pendingDraw.title"> · {{ pendingDraw.title }}</template>
+            {{ pendingDraw.profiles?.name ?? '?' }} · {{ pendingDraw.year }}<template v-if="pendingMovie?.title"> · {{ pendingMovie.title }}</template><template v-else-if="pendingDraw.movie_chosen"> · Film choisi</template>
           </p>
-          <button v-if="pendingDraw.title" type="button" class="pending-clear-film-btn" @click.stop="handleClearFilm">retirer ce film</button>
+          <button v-if="pendingMovie" type="button" class="pending-clear-film-btn" @click.stop="handleClearFilm">retirer ce film</button>
+          <button v-else-if="pendingDraw.movie_chosen && isAdmin" type="button" class="pending-clear-film-btn" @click.stop="handleClearFilm">annuler le choix</button>
           <button type="button" class="pending-btn-primary" @click.stop="prefillFromPendingDraw">Pré-remplir le formulaire</button>
           <NuxtLink :to="`/discover/${pendingDraw.year}`" class="pending-link-secondary">Explorer les films →</NuxtLink>
         </div>
@@ -104,8 +105,10 @@ const router = useRouter()
 
 const { profiles, load: loadProfiles } = useProfiles()
 const { add: addEntry } = useJournal()
-const { pendingDraw, load: loadPendingDraw, remove: deletePendingDraw, clearFilm } = usePendingDraw()
-const { requireAuth } = useAuth()
+const { pendingDraw, pendingMovie, load: loadPendingDraw, remove: deletePendingDraw, clearFilm } = usePendingDraw()
+const { requireAuth, user } = useAuth()
+
+const isAdmin = computed(() => profiles.value.find(p => p.user_id === user.value?.id)?.is_admin ?? false)
 const { confirm } = useConfirm()
 const { searchMovies } = useTmdb()
 
@@ -162,8 +165,8 @@ function prefillFromPendingDraw() {
   form.release_year = pendingDraw.value.year
   form.profile_id = pendingDraw.value.profile_id ?? ''
   form.watch_date = new Date().toISOString().split('T')[0] ?? ''
-  if (pendingDraw.value.title) form.title = pendingDraw.value.title
-  if (pendingDraw.value.tmdb_id) form.tmdb_id = pendingDraw.value.tmdb_id
+  if (pendingMovie.value?.title) form.title = pendingMovie.value.title
+  if (pendingMovie.value?.tmdb_id) form.tmdb_id = pendingMovie.value.tmdb_id
 }
 
 // ── Swipe banner ──────────────────────────────────────────
