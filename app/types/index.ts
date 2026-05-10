@@ -2,6 +2,7 @@ export interface Profile {
   id: number
   name: string
   user_id?: string
+  is_admin?: boolean
 }
 
 export interface JournalEntry {
@@ -24,6 +25,7 @@ export interface PendingDraw {
   profile_id: number | null
   year: number
   drawn_at: string
+  movie_chosen: boolean
   profiles: { name: string } | null
   pending_movie: PendingMovie[]
 }

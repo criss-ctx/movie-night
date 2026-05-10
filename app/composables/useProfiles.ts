@@ -5,7 +5,7 @@ export function useProfiles() {
   const profiles = useState<Profile[]>('profiles', () => [])
 
   async function load() {
-    const { data } = await supabase.from('profiles').select('id, name, user_id').order('id')
+    const { data } = await supabase.from('profiles').select('id, name, user_id, is_admin').order('id')
     if (data) profiles.value = data as Profile[]
   }
 

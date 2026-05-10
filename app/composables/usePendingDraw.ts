@@ -43,7 +43,10 @@ export function usePendingDraw() {
         title
       })
 
-    if (!error) await load()
+    if (!error) {
+      await supabase.from('pending_draw').update({ movie_chosen: true }).eq('id', pendingDraw.value.id)
+      await load()
+    }
     return { error }
   }
 
@@ -54,7 +57,10 @@ export function usePendingDraw() {
       .delete()
       .eq('pending_draw_id', pendingDraw.value.id)
 
-    if (!error) await load()
+    if (!error) {
+      await supabase.from('pending_draw').update({ movie_chosen: false }).eq('id', pendingDraw.value.id)
+      await load()
+    }
     return { error }
   }
 

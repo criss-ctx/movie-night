@@ -26,10 +26,28 @@
 
       <button
         v-if="user"
-        class="logout-btn visible"
+        class="auth-btn"
         aria-label="Se déconnecter"
         @click="signOut"
-      >&#8617;</button>
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+      <button
+        v-else
+        class="auth-btn"
+        aria-label="Se connecter"
+        @click="showLoginModal = true"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+      </button>
     </header>
     <main class="app-content">
       <slot />
@@ -74,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-const { user, signOut } = useAuth()
+const { user, signOut, showLoginModal } = useAuth()
 const { theme, toggle, init } = useTheme()
 
 onMounted(init)
@@ -171,26 +189,22 @@ onMounted(init)
   }
 }
 
-.logout-btn {
-  display: none;
+.auth-btn {
   position: absolute;
   right: 16px;
   background: none;
   border: none;
   color: var(--text-faint);
-  font-size: 18px;
   cursor: pointer;
   padding: 8px;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: color 150ms;
 }
 
-.logout-btn.visible {
-  display: block;
-}
-
 @media (hover: hover) {
-  .logout-btn:hover {
+  .auth-btn:hover {
     color: var(--text-secondary);
   }
 }

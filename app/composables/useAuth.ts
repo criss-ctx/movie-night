@@ -7,9 +7,10 @@ export function useAuth() {
   // Auto-execute pending action when session opens in the same tab
   watch(user, async (newUser) => {
     if (newUser && pendingAction.value) {
-      await pendingAction.value()
+      const action = pendingAction.value
       pendingAction.value = null
       showLoginModal.value = false
+      await action()
     }
   })
 
@@ -26,7 +27,7 @@ export function useAuth() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${window.location.origin}/confirm`,
         shouldCreateUser: false
       }
     })

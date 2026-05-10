@@ -11,8 +11,14 @@ sécuriser le film secret, et poser la fondation du système de votes.
 |-------|-------|--------|
 | 1 | Lier les profils aux comptes Auth | ✅ Terminé |
 | 2 | Magic link (remplace email + mot de passe) | ✅ Terminé |
-| 3 | Film secret (`pending_movie`) | 🔶 En test (colonnes tmdb_id/title à supprimer de pending_draw après validation) |
+| 3 | Film secret (`pending_movie`) | 🔶 En test — valider visibilité owner-only ; puis `ALTER TABLE pending_draw DROP COLUMN tmdb_id, DROP COLUMN title` |
 | 4 | Votes / notes | ⬜ À faire |
+
+### Notes Phase 2 (ajouts post-implémentation)
+
+- **Fix PKCE** — `emailRedirectTo` doit pointer sur `/confirm` (pas juste `window.location.origin`) pour que `@nuxtjs/supabase` échange le code PKCE et établisse une session persistante avec refresh silencieux
+- **Rate limit** — limite GoTrue à 2 emails/h sur le free tier (non éditable) ; résolu avec SMTP custom Gmail + mot de passe d'application Google
+- **`shouldCreateUser: false`** — emails inconnus rejetés silencieusement par Supabase (pas de nouveaux comptes créés)
 
 ---
 
@@ -137,7 +143,7 @@ User saisit email → clic "Envoyer le lien"
 
 ---
 
-## Phase 3 — Film secret (`pending_film`)
+## Phase 3 — Film secret (`pending_movie`)
 
 > Scinder `pending_draw` : la partie publique reste, le film choisi devient privé.
 
@@ -150,9 +156,11 @@ User saisit email → clic "Envoyer le lien"
 
 ### Étapes SQL (à exécuter dans cet ordre)
 
+> ✅ **SQL exécuté** — table `pending_movie` créée, RLS active, GRANT anon ajouté. `movie_chosen BOOLEAN` ajouté à `pending_draw`. Code déployé. Reste à valider puis supprimer les anciennes colonnes.
+
 ```sql
--- 1. Créer la table pending_film
-CREATE TABLE pending_film (
+-- 1. Créer la table pending_movie (NB : nommée "movie" et non "film")
+CREATE TABLE pending_movie (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   pending_draw_id BIGINT REFERENCES pending_draw(id) ON DELETE CASCADE,
   profile_id BIGINT REFERENCES profiles(id) ON DELETE SET NULL,
@@ -162,17 +170,17 @@ CREATE TABLE pending_film (
 );
 
 -- 2. Activer RLS
-ALTER TABLE pending_film ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pending_movie ENABLE ROW LEVEL SECURITY;
 
 -- 3. Policy : visible uniquement par l'owner
-CREATE POLICY "owner can read pending_film"
-ON pending_film FOR SELECT
+CREATE POLICY "owner can read pending_movie"
+ON pending_movie FOR SELECT
 USING (
   auth.uid() = (SELECT user_id FROM profiles WHERE id = profile_id)
 );
 
-CREATE POLICY "owner can write pending_film"
-ON pending_film FOR ALL
+CREATE POLICY "owner can write pending_movie"
+ON pending_movie FOR ALL
 USING (
   auth.uid() = (SELECT user_id FROM profiles WHERE id = profile_id)
 )
@@ -188,11 +196,11 @@ ALTER TABLE pending_draw DROP COLUMN tmdb_id, DROP COLUMN title;
 
 ### Fichiers à modifier (code)
 
-- `app/types/index.ts` — ajout de `PendingFilm`, mise à jour de `PendingDraw` (sans `tmdb_id`/`title`)
-- `app/composables/usePendingDraw.ts` — `load()` joint `pending_film` si owner, `setFilm()` insère dans `pending_film`
-- `app/pages/add.vue` — la bannière affiche le film **seulement si** `pendingFilm` est retourné
-- `app/pages/movie/[id].vue` — bouton "Choisir ce film" appelle le nouveau `setFilm()`
-- `app/pages/discover/[year].vue` — bouton +/✓ appelle le nouveau `setFilm()`
+- ✅ `app/types/index.ts` — ajout de `PendingMovie`, `movie_chosen` sur `PendingDraw`
+- ✅ `app/composables/usePendingDraw.ts` — `load()` joint `pending_movie`, `setFilm()` insère dans `pending_movie`, `movie_chosen` mis à jour
+- ✅ `app/pages/add.vue` — bannière affiche le film seulement si `pendingMovie` retourné ; indicateur "Film choisi" si `movie_chosen`
+- ✅ `app/pages/movie/[id].vue` — bouton "Choisir ce film" appelle le nouveau `setFilm()`
+- ✅ `app/pages/discover/[year].vue` — bouton +/✓ appelle le nouveau `setFilm()`
 
 ---
 

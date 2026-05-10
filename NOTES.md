@@ -68,13 +68,24 @@
 
 - `EditEntryModal.vue` — dropdown TMDB affiché au-dessus du champ titre (`:deep(.search-dropdown)` avec `bottom: calc(100% + 4px)`) pour ne pas être masqué par le clavier virtuel mobile
 
-### 9 mai 2026 (suite) — Identités & authentification magic link
+### 9 mai 2026 — Identités & authentification magic link
 
 - **`profiles`** — ajout colonnes `user_id UUID` (lien vers `auth.users`) et `is_admin BOOLEAN` ; 4 comptes Supabase Auth créés et liés ; Chris (id=3) marqué admin
 - **Fonction SQL `is_admin()`** — helper `SECURITY DEFINER` réutilisé dans toutes les RLS
-- **RLS renforcées** — `journal` et `pending_draw` UPDATE/DELETE : owner ou admin uniquement ; INSERT : UUID doit correspondre à un profil connu (`shouldCreateUser: false` côté client)
-- **Magic link** — `useAuth.ts` : `signInWithOtp` remplace `signInWithPassword` ; watcher sur `user` pour exécuter l'action en attente si le lien est cliqué dans le même onglet
-- **`LoginModal.vue`** — plus de champ password ; état `emailSent` affiche un message de confirmation après envoi
+- **RLS renforcées** — `journal` et `pending_draw` UPDATE/DELETE : owner ou admin uniquement ; INSERT relaxé à `auth.role() = 'authenticated'` (un owner peut ajouter pour n'importe quel profil)
+- **Magic link** — `useAuth.ts` : `signInWithOtp` remplace `signInWithPassword` ; `shouldCreateUser: false` rejette silencieusement les emails inconnus ; watcher sur `user` pour exécuter l'action en attente si le lien est cliqué dans le même onglet
+- **`LoginModal.vue`** — plus de champ password ; état `emailSent` (mis à `true` uniquement en succès) affiche un message de confirmation après envoi
+
+### 10 mai 2026 — Film secret, PKCE, icônes auth
+
+- **Table `pending_movie`** — nouvelle table (tmdb_id, title, pending_draw_id, profile_id) avec RLS owner-only ; remplace les colonnes `tmdb_id`/`title` de `pending_draw` (à supprimer après validation avec `ALTER TABLE pending_draw DROP COLUMN tmdb_id, DROP COLUMN title`)
+- **`movie_chosen BOOLEAN`** — ajouté à `pending_draw` : indicateur public qu'un film a été choisi, sans révéler lequel
+- **GRANT sur `pending_movie`** — `GRANT SELECT ON pending_movie TO anon` nécessaire même avec RLS pour que le join Supabase ne retourne pas 403
+- **`isAdmin` computed** — `add.vue` : admin peut "annuler le choix" d'un film choisi par un autre utilisateur, sans voir lequel
+- **Fix PKCE** — `emailRedirectTo` corrigé de `window.location.origin` à `${window.location.origin}/confirm` dans `useAuth.ts` ; `@nuxtjs/supabase` utilise le flux PKCE qui exige que le code d'auth arrive sur la route `/confirm` pour établir la session et activer le refresh silencieux — sans ce fix les sessions expiraient après ~1h
+- **Icônes SVG** — login/logout dans `default.vue` : icônes stroke-based 18×18 remplaçant les caractères unicode ↩/↪ peu lisibles
+- **Rate limit OTP** — limite au niveau GoTrue (2 emails/h sur le free tier, non éditable) ; résolu en configurant un SMTP custom Gmail (Authentication → Email → SMTP Settings) avec un mot de passe d'application Google — les magic links transitent désormais par `criss.ctx@gmail.com`, sans limite de projet
+- **Fix race condition `pendingAction`** — `useAuth.ts` : action capturée et `pendingAction` mis à `null` *avant* l'`await`, évite que les 3 instances de `watch(user)` (default.vue, add.vue, index.vue) exécutent toutes l'action en simultané → doublons en journal
 
 ### 9 mai 2026 — TMDB étendu, tirage enrichi, badges
 
@@ -164,7 +175,8 @@ movie-night/
 
 - `journal` — id, title, release_year, profile_id (FK), watch_date, tmdb_id (nullable)
 - `profiles` — id, name, user_id (FK → auth.users), is_admin — RLS lecture publique ; écriture owner ou admin
-- `pending_draw` — id, profile_id (FK, on delete set null), year, drawn_at, tmdb_id (nullable), title (nullable) — un seul enregistrement actif
+- `pending_draw` — id, profile_id (FK, on delete set null), year, drawn_at, movie_chosen (bool) — un seul enregistrement actif
+- `pending_movie` — id, pending_draw_id (FK cascade), profile_id (FK), tmdb_id, title — RLS owner-only ; visible uniquement par celui qui a choisi le film
 
 ### Workflow git
 
