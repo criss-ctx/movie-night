@@ -56,6 +56,30 @@
             </div>
           </div>
 
+          <div v-if="providers?.flatrate?.length || providers?.rent?.length" class="providers">
+            <div class="providers-header">
+              <span class="providers-label">Disponible sur</span>
+              <a :href="providers!.link" target="_blank" rel="noopener" class="providers-jwlink">JustWatch →</a>
+            </div>
+            <div v-if="providers!.flatrate?.length" class="providers-group">
+              <span class="providers-type">Abonnement</span>
+              <div class="providers-list">
+                <span v-for="p in providers!.flatrate" :key="p.provider_id" class="provider-item" :data-name="p.provider_name" tabindex="0" :aria-label="p.provider_name">
+                  <img :src="getPosterUrl(p.logo_path, 'original')!" :alt="p.provider_name" class="provider-logo" />
+                </span>
+              </div>
+            </div>
+            <div v-if="providers!.rent?.length" class="providers-group">
+              <span class="providers-type">Location</span>
+              <div class="providers-list">
+                <span v-for="p in providers!.rent" :key="p.provider_id" class="provider-item" :data-name="p.provider_name" tabindex="0" :aria-label="p.provider_name">
+                  <img :src="getPosterUrl(p.logo_path, 'original')!" :alt="p.provider_name" class="provider-logo" />
+                </span>
+              </div>
+            </div>
+            <p class="providers-disclaimer">Netflix non inclus · données JustWatch</p>
+          </div>
+
           <button class="modify-btn" @click="handleModify">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -70,14 +94,14 @@
 </template>
 
 <script setup lang="ts">
-import type { JournalEntry, TmdbMovieDetail } from '~/types'
+import type { JournalEntry, TmdbMovieDetail, TmdbWatchProvidersResponse } from '~/types'
 
 const router = useRouter()
 const route = useRoute()
 const entryId = Number(route.params.id)
 
 const { getEntryById, update } = useJournal()
-const { getMovieDetail, getPosterUrl } = useTmdb()
+const { getMovieDetail, getPosterUrl, getWatchProviders } = useTmdb()
 const { profiles, load: loadProfiles } = useProfiles()
 const { requireAuth } = useAuth()
 const { editEntry } = useEditEntry()
@@ -91,6 +115,13 @@ const { data: movie, refresh: refreshMovie } = await useAsyncData<TmdbMovieDetai
   `entry-tmdb-${entryId}`,
   () => entry.value?.tmdb_id ? getMovieDetail(entry.value.tmdb_id) : Promise.resolve(null)
 )
+
+const { data: watchProvidersData } = await useAsyncData<TmdbWatchProvidersResponse | null>(
+  `entry-providers-${entryId}`,
+  () => entry.value?.tmdb_id ? getWatchProviders(entry.value.tmdb_id) : Promise.resolve(null)
+)
+
+const providers = computed(() => watchProvidersData.value?.results?.['FR'] ?? null)
 
 const posterUrl = computed(() => movie.value ? getPosterUrl(movie.value.poster_path, 'w342') : null)
 
@@ -301,6 +332,101 @@ async function handleModify() {
 .entry-journal-meta strong {
   color: var(--text);
   font-weight: 500;
+}
+
+.providers {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.providers-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.providers-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.providers-jwlink {
+  font-size: 12px;
+  color: var(--text-faint);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .providers-jwlink:hover { color: var(--text-secondary); }
+}
+
+.providers-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.providers-type {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.providers-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.provider-item {
+  position: relative;
+  display: inline-block;
+  outline: none;
+}
+
+.provider-item::after {
+  content: attr(data-name);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-raised, var(--surface));
+  color: var(--text);
+  border: 1px solid var(--border-mid);
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  white-space: nowrap;
+  padding: 3px 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms;
+  z-index: 10;
+}
+
+.provider-item:hover::after,
+.provider-item:focus::after {
+  opacity: 1;
+}
+
+.provider-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+}
+
+.providers-disclaimer {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-style: italic;
+  margin: 0;
 }
 
 .modify-btn {

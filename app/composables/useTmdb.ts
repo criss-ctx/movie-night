@@ -1,4 +1,4 @@
-import type { TmdbSearchResponse, TmdbMovieDetail, TmdbDiscoverResponse } from '~/types'
+import type { TmdbSearchResponse, TmdbMovieDetail, TmdbDiscoverResponse, TmdbWatchProvidersResponse } from '~/types'
 
 const POSTER_BASE_URL = 'https://image.tmdb.org/t/p/'
 
@@ -25,10 +25,14 @@ export function useTmdb() {
     return await $fetch<TmdbMovieDetail>(`/api/tmdb/movie/${tmdbId}`)
   }
 
-  function getPosterUrl(posterPath: string | null, size: 'w185' | 'w342' | 'w500' = 'w342'): string | null {
+  async function getWatchProviders(tmdbId: number): Promise<TmdbWatchProvidersResponse> {
+    return await $fetch<TmdbWatchProvidersResponse>(`/api/tmdb/providers/${tmdbId}`)
+  }
+
+  function getPosterUrl(posterPath: string | null, size: 'w185' | 'w342' | 'w500' | 'original' = 'w342'): string | null {
     if (!posterPath) return null
     return `${POSTER_BASE_URL}${size}${posterPath}`
   }
 
-  return { searchMovies, getMovieDetail, discoverMovies, getPosterUrl }
+  return { searchMovies, getMovieDetail, discoverMovies, getPosterUrl, getWatchProviders }
 }

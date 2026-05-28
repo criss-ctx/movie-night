@@ -11,7 +11,7 @@ sécuriser le film secret, et poser la fondation du système de votes.
 |-------|-------|--------|
 | 1 | Lier les profils aux comptes Auth | ✅ Terminé |
 | 2 | Magic link (remplace email + mot de passe) | ✅ Terminé |
-| 3 | Film secret (`pending_movie`) | 🔶 En test — valider visibilité owner-only ; puis `ALTER TABLE pending_draw DROP COLUMN tmdb_id, DROP COLUMN title` |
+| 3 | Film secret (`pending_movie`) | ✅ Terminé — RLS validée, colonnes `tmdb_id`/`title` supprimées de `pending_draw` (2026-05-28) |
 | 4 | Votes / notes | ⬜ À faire |
 
 ### Notes Phase 1 (ajouts post-implémentation)
