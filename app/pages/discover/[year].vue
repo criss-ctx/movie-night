@@ -62,7 +62,7 @@
               aria-label="Déjà vu"
             >vu</span>
             <button
-              v-if="pendingDraw"
+              v-if="pendingDraw && (year === pendingDraw.year || pendingMovie?.tmdb_id === movie.id)"
               class="card-choose-btn"
               :class="{ 'card-choose-btn--chosen': pendingMovie?.tmdb_id === movie.id }"
               :title="pendingMovie?.tmdb_id === movie.id ? 'Film sélectionné' : 'Choisir ce film'"

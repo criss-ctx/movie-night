@@ -52,7 +52,7 @@
       </div>
 
       <button
-        v-if="pendingDraw && movie"
+        v-if="pendingDraw && movie && (Number(releaseYear) === pendingDraw.year || isChosen)"
         class="choose-btn"
         :class="{ 'choose-btn--chosen': isChosen }"
         @click="handleChoose"
