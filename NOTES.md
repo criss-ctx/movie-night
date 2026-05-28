@@ -95,6 +95,14 @@
 - **Streaming availability** ✅ — endpoint TMDB `/3/movie/{id}/watch/providers` (JustWatch) ; proxy `server/api/tmdb/providers/[id].get.ts` ; flatrate + location sur `/movie/[id]` et `/entry/[id]`
 - **Convention commit** — tous les commits doivent être en anglais (les commits français passés étaient une erreur)
 
+### 28 mai 2026 (suite) — MovieDetailView, certification, sociétés de production
+
+- **`MovieDetailView.vue`** — nouveau composant partagé : hero (affiche 150px + faits + note), body full-width (tagline, synopsis tronqué + voir plus/moins, crédits en CSS grid, journal meta), section providers JustWatch ; `<slot />` pour le bouton d'action injecté par la page
+- **Refactoring** — `movie/[id].vue` et `entry/[id].vue` refactorisés pour utiliser `<MovieDetailView>` ; chaque page ne conserve que : shell, données, bouton action dans le slot
+- **Certification CNC** — badge FR (TP, 10, 12, 16, 18) extrait de `release_dates` (type theatrical, `append_to_response=credits,release_dates`) ; tooltip hover/touch via CSS `::after` + `tabindex="0"` + mapping des significations
+- **Sociétés de production** — `production_companies` (2 premières) affichées dans la section crédits ; permet d'identifier les originals Netflix, Amazon, Apple TV+
+- **Fix `maxYear`** — `index.vue` : `new Date().getFullYear() - 1` pour exclure l'année en cours du tirage
+
 ### 9 mai 2026 — TMDB étendu, tirage enrichi, badges
 
 - **Fix** — cache TMDB stale sur `/entry/[id]` : `refresh()` appelé après save dans `handleModify`
@@ -162,6 +170,7 @@ movie-night/
 │   │   ├── EditEntryModal.vue       — Teleport + useState singleton (édition d'entrée)
 │   │   ├── EditEntryForm.vue        — formulaire avec autocomplete TMDB (display:contents)
 │   │   ├── JournalCard.vue          — carte avec swipe mobile + hover desktop
+│   │   ├── MovieDetailView.vue      — fiche film partagée (hero + body + providers) ; slot pour action
 │   │   ├── MovieSearchOverlay.vue   — overlay plein écran recherche TMDB (Teleport, slide-up)
 │   │   └── UserAvatar.vue           — cercle avatar : emoji ou initiales + couleur oklch déterministe
 │   ├── layouts/
@@ -182,7 +191,8 @@ movie-night/
 │   ├── api/tmdb/
 │   │   ├── search.get.ts            — proxy /3/search/movie (+ primary_release_year, without_genres)
 │   │   ├── discover.get.ts          — proxy /3/discover/movie (+ vote_average.gte, with_original_language)
-│   │   └── movie/[id].get.ts        — proxy /3/movie/{id}
+│   │   ├── movie/[id].get.ts        — proxy /3/movie/{id}?append_to_response=credits,release_dates
+│   │   └── providers/[id].get.ts    — proxy /3/movie/{id}/watch/providers (JustWatch)
 │   ├── constants/
 │   │   └── tmdb.ts                  — TMDB_EXCLUDED_GENRES (join ','), TMDB_WARNING_GENRES
 │   └── mock/tmdb.ts                 — données mock si NUXT_TMDB_TOKEN absent
@@ -217,6 +227,9 @@ movie-night/
 
 - **Identités & données privées** — 4 phases planifiées dans `PLAN_AUTH_IDENTITES.md` ✅ Phases 1–3 terminées, Phase 4 (votes) à faire
 - **Streaming availability** ✅ — endpoint TMDB `/watch/providers` (JustWatch), affichage flatrate + location sur `/movie/[id]` et `/entry/[id]`, tooltip CSS `::after`, disclaimer Netflix
+- **MovieDetailView** ✅ — composant partagé : hero, body, providers ; `movie/[id]` et `entry/[id]` refactorisés
+- **Certification CNC** ✅ — badge FR (TP/10/12/16/18) avec tooltip signification ; via `release_dates` TMDB
+- **Sociétés de production** ✅ — 2 premières dans la section crédits (identifie les originals plateformes)
 - **Votes / notes** — table `votes` (profile_id, journal_id, rating) → affichage sur la fiche `/entry/[id]`
 - **Watchmode (éventuel)** — watchmode.com peut compléter JustWatch pour afficher Netflix (absent de TMDB/JustWatch FR) ; free tier 1000 req/jour ; nécessite fusion des sources dans `providers/[id].get.ts`
 - **Stats** — section dédiée : films par personne, moyenne des notes, années préférées

@@ -12,74 +12,13 @@
       <div v-if="!entry" class="entry-status">Film introuvable.</div>
 
       <template v-else>
-          <div class="entry-content">
-            <div class="entry-poster-col">
-              <img
-                v-if="posterUrl"
-                :src="posterUrl"
-                :alt="`Affiche de ${entry.title}`"
-                class="entry-poster"
-              />
-              <div v-else class="entry-poster-placeholder">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <rect x="2" y="2" width="20" height="20" rx="2"/>
-                  <path d="M7 8h10M7 12h10M7 16h6"/>
-                </svg>
-              </div>
-            </div>
-
-            <div class="entry-info-col">
-              <h1 class="entry-title">{{ movie?.title ?? entry.title }}</h1>
-              <p v-if="movie && movie.original_title !== movie.title" class="entry-original-title">{{ movie.original_title }}</p>
-              <p v-if="movie?.tagline" class="entry-tagline">« {{ movie.tagline }} »</p>
-
-              <div class="entry-meta-row">
-                <span class="entry-meta-item">{{ movie?.release_date?.split('-')[0] ?? entry.release_year }}</span>
-                <span v-if="formattedRuntime" class="entry-meta-item">{{ formattedRuntime }}</span>
-              </div>
-
-              <div v-if="movie?.genres.length" class="entry-genres">
-                <span v-for="genre in movie.genres" :key="genre.id" class="entry-genre-tag">{{ genre.name }}</span>
-              </div>
-
-              <div v-if="movie && movie.vote_count > 0" class="entry-rating">
-                <span class="entry-rating-score">{{ movie.vote_average.toFixed(1) }}</span>
-                <span class="entry-rating-label">/ 10 · {{ movie.vote_count.toLocaleString('fr-FR') }} votes</span>
-              </div>
-
-              <p v-if="movie?.overview" class="entry-overview">{{ movie.overview }}</p>
-
-              <div class="entry-journal-meta">
-                <span>Choisi par <strong>{{ entry.profiles?.name ?? '?' }}</strong></span>
-                <span>Vu le {{ formatDate(entry.watch_date) }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="providers?.flatrate?.length || providers?.rent?.length" class="providers">
-            <div class="providers-header">
-              <span class="providers-label">Disponible sur</span>
-              <a :href="providers!.link" target="_blank" rel="noopener" class="providers-jwlink">JustWatch →</a>
-            </div>
-            <div v-if="providers!.flatrate?.length" class="providers-group">
-              <span class="providers-type">Abonnement</span>
-              <div class="providers-list">
-                <span v-for="p in providers!.flatrate" :key="p.provider_id" class="provider-item" :data-name="p.provider_name" tabindex="0" :aria-label="p.provider_name">
-                  <img :src="getPosterUrl(p.logo_path, 'original')!" :alt="p.provider_name" class="provider-logo" />
-                </span>
-              </div>
-            </div>
-            <div v-if="providers!.rent?.length" class="providers-group">
-              <span class="providers-type">Location</span>
-              <div class="providers-list">
-                <span v-for="p in providers!.rent" :key="p.provider_id" class="provider-item" :data-name="p.provider_name" tabindex="0" :aria-label="p.provider_name">
-                  <img :src="getPosterUrl(p.logo_path, 'original')!" :alt="p.provider_name" class="provider-logo" />
-                </span>
-              </div>
-            </div>
-            <p class="providers-disclaimer">Netflix non inclus · données JustWatch</p>
-          </div>
-
+        <MovieDetailView
+          :movie="movie"
+          :providers="providers"
+          :fallback-title="entry.title"
+          :fallback-year="entry.release_year"
+          :journal-meta="{ name: entry.profiles?.name ?? null, date: entry.watch_date }"
+        >
           <button class="modify-btn" @click="handleModify">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -87,6 +26,7 @@
             </svg>
             Modifier
           </button>
+        </MovieDetailView>
       </template>
 
     </div>
@@ -101,7 +41,7 @@ const route = useRoute()
 const entryId = Number(route.params.id)
 
 const { getEntryById, update } = useJournal()
-const { getMovieDetail, getPosterUrl, getWatchProviders } = useTmdb()
+const { getMovieDetail, getWatchProviders } = useTmdb()
 const { profiles, load: loadProfiles } = useProfiles()
 const { requireAuth } = useAuth()
 const { editEntry } = useEditEntry()
@@ -122,20 +62,6 @@ const { data: watchProvidersData } = await useAsyncData<TmdbWatchProvidersRespon
 )
 
 const providers = computed(() => watchProvidersData.value?.results?.['FR'] ?? null)
-
-const posterUrl = computed(() => movie.value ? getPosterUrl(movie.value.poster_path, 'w342') : null)
-
-const formattedRuntime = computed(() => {
-  if (!movie.value?.runtime) return null
-  const h = Math.floor(movie.value.runtime / 60)
-  const m = movie.value.runtime % 60
-  return h > 0 ? `${h}h${m > 0 ? String(m).padStart(2, '0') : ''}` : `${m}min`
-})
-
-function formatDate(dateStr: string) {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-}
 
 await loadProfiles()
 
@@ -194,245 +120,11 @@ async function handleModify() {
   padding: 48px 0;
 }
 
-.entry-content {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-
-.entry-poster-col {
-  flex-shrink: 0;
-  width: 120px;
-}
-
-.entry-poster {
-  width: 100%;
-  border-radius: var(--r-md);
-  display: block;
-}
-
-.entry-poster-placeholder {
-  width: 100%;
-  aspect-ratio: 2/3;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-faint);
-}
-
-.entry-info-col {
-  flex: 1;
-  min-width: 0;
-}
-
-.entry-title {
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0 0 4px;
-  line-height: 1.2;
-  letter-spacing: 0.02em;
-}
-
-.entry-original-title {
-  font-size: 13px;
-  color: var(--text-faint);
-  margin: 0 0 10px;
-  font-style: italic;
-}
-
-.entry-tagline {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin: 0 0 14px;
-  font-style: italic;
-  line-height: 1.5;
-}
-
-.entry-meta-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-.entry-meta-item {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.entry-meta-item + .entry-meta-item::before {
-  content: '·';
-  margin-right: 10px;
-  color: var(--text-faint);
-}
-
-.entry-genres {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-
-.entry-genre-tag {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 3px 10px;
-}
-
-.entry-rating {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.entry-rating-score {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.entry-rating-label {
-  font-size: 12px;
-  color: var(--text-faint);
-}
-
-.entry-overview {
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--text-secondary);
-  margin: 0 0 16px;
-}
-
-.entry-journal-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-  margin-top: 4px;
-}
-
-.entry-journal-meta strong {
-  color: var(--text);
-  font-weight: 500;
-}
-
-.providers {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.providers-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.providers-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.providers-jwlink {
-  font-size: 12px;
-  color: var(--text-faint);
-  text-decoration: none;
-}
-
-@media (hover: hover) {
-  .providers-jwlink:hover { color: var(--text-secondary); }
-}
-
-.providers-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.providers-type {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.providers-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.provider-item {
-  position: relative;
-  display: inline-block;
-  outline: none;
-}
-
-.provider-item::after {
-  content: attr(data-name);
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--surface-raised, var(--surface));
-  color: var(--text);
-  border: 1px solid var(--border-mid);
-  border-radius: 4px;
-  font-family: var(--font-ui);
-  font-size: 10px;
-  white-space: nowrap;
-  padding: 3px 6px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 120ms;
-  z-index: 10;
-}
-
-.provider-item:hover::after,
-.provider-item:focus::after {
-  opacity: 1;
-}
-
-.provider-logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  object-fit: cover;
-  display: block;
-}
-
-.providers-disclaimer {
-  font-size: 11px;
-  color: var(--text-faint);
-  font-style: italic;
-  margin: 0;
-}
-
 .modify-btn {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  margin-top: 24px;
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 500;
@@ -452,5 +144,4 @@ async function handleModify() {
     background: var(--surface-raised);
   }
 }
-
 </style>
