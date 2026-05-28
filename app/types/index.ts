@@ -67,6 +67,25 @@ export interface TmdbMovieDetail {
   status: string
 }
 
+export interface TmdbProvider {
+  provider_id: number
+  provider_name: string
+  logo_path: string
+  display_priority: number
+}
+
+export interface TmdbWatchProviders {
+  link?: string
+  flatrate?: TmdbProvider[]
+  rent?: TmdbProvider[]
+  buy?: TmdbProvider[]
+}
+
+export interface TmdbWatchProvidersResponse {
+  id: number
+  results: Record<string, TmdbWatchProviders>
+}
+
 export interface TmdbSearchResponse {
   page: number
   results: TmdbMovie[]

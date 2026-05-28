@@ -88,6 +88,13 @@
 - **Fix race condition `pendingAction`** — `useAuth.ts` : action capturée et `pendingAction` mis à `null` *avant* l'`await`, évite que les 3 instances de `watch(user)` (default.vue, add.vue, index.vue) exécutent toutes l'action en simultané → doublons en journal
 - **Page `/confirm`** — `app/pages/confirm.vue` créée manuellement ; `@nuxtjs/supabase` v2 ne la génère pas automatiquement ; `createBrowserClient` de `@supabase/ssr` détecte le `?code=` et échange le token PKCE dès que la page se charge ; redirige vers `/` via `watch(user, ..., { once: true })` dès que la session est établie
 
+### 28 mai 2026 — Bug fix année + streaming availability
+
+- **Bug fix** — `discover/[year].vue` et `movie/[id].vue` : bouton "choisir" masqué si l'année de la page ne correspond pas à `pendingDraw.year` ; exception si le film est déjà choisi (pour permettre le retrait)
+- **Phase 3 clôturée** — RLS `pending_movie` validée ; `ALTER TABLE pending_draw DROP COLUMN tmdb_id, DROP COLUMN title` exécuté
+- **Streaming availability** ✅ — endpoint TMDB `/3/movie/{id}/watch/providers` (JustWatch) ; proxy `server/api/tmdb/providers/[id].get.ts` ; flatrate + location sur `/movie/[id]` et `/entry/[id]`
+- **Convention commit** — tous les commits doivent être en anglais (les commits français passés étaient une erreur)
+
 ### 9 mai 2026 — TMDB étendu, tirage enrichi, badges
 
 - **Fix** — cache TMDB stale sur `/entry/[id]` : `refresh()` appelé après save dans `handleModify`
@@ -208,8 +215,10 @@ movie-night/
 
 > Voir **[PLAN_AUTH_IDENTITES.md](./PLAN_AUTH_IDENTITES.md)** pour le plan détaillé et l'état d'avancement du refactoring identités/auth (4 phases : liaison profils↔auth, magic link, film secret, votes).
 
-- **Identités & données privées** — 4 phases planifiées dans `PLAN_AUTH_IDENTITES.md` *(en cours)*
+- **Identités & données privées** — 4 phases planifiées dans `PLAN_AUTH_IDENTITES.md` ✅ Phases 1–3 terminées, Phase 4 (votes) à faire
+- **Streaming availability** ✅ — endpoint TMDB `/watch/providers` (JustWatch), affichage flatrate + location sur `/movie/[id]` et `/entry/[id]`, tooltip CSS `::after`, disclaimer Netflix
 - **Votes / notes** — table `votes` (profile_id, journal_id, rating) → affichage sur la fiche `/entry/[id]`
+- **Watchmode (éventuel)** — watchmode.com peut compléter JustWatch pour afficher Netflix (absent de TMDB/JustWatch FR) ; free tier 1000 req/jour ; nécessite fusion des sources dans `providers/[id].get.ts`
 - **Stats** — section dédiée : films par personne, moyenne des notes, années préférées
 - **Multi-groupes** — plusieurs groupes avec journaux isolés (Nuxt layers + RLS Supabase par groupe)
 - **App mobile** — Capacitor + Ionic Vue (iOS/Android) une fois l'app web stable
