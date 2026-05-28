@@ -50,6 +50,35 @@ export interface TmdbGenre {
   name: string
 }
 
+export interface TmdbReleaseDate {
+  certification: string
+  iso_639_1: string
+  note: string
+  release_date: string
+  type: number
+}
+
+export interface TmdbReleaseDatesEntry {
+  iso_3166_1: string
+  release_dates: TmdbReleaseDate[]
+}
+
+export interface TmdbCastMember {
+  id: number
+  name: string
+  character: string
+  profile_path: string | null
+  order: number
+}
+
+export interface TmdbCrewMember {
+  id: number
+  name: string
+  job: string
+  department: string
+  profile_path: string | null
+}
+
 export interface TmdbMovieDetail {
   id: number
   title: string
@@ -65,6 +94,15 @@ export interface TmdbMovieDetail {
   popularity: number
   genres: TmdbGenre[]
   status: string
+  production_countries: { iso_3166_1: string; name: string }[]
+  production_companies: { id: number; name: string; origin_country: string }[]
+  credits: {
+    cast: TmdbCastMember[]
+    crew: TmdbCrewMember[]
+  }
+  release_dates?: {
+    results: TmdbReleaseDatesEntry[]
+  }
 }
 
 export interface TmdbProvider {

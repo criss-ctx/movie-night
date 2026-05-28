@@ -11,78 +11,18 @@
 
       <div v-if="pending" class="movie-loading">Chargement…</div>
 
-      <div v-else-if="movie" class="movie-content">
-        <div class="movie-poster-col">
-          <img
-            v-if="posterUrl"
-            :src="posterUrl"
-            :alt="`Affiche de ${movie.title}`"
-            class="movie-poster"
-          />
-          <div v-else class="movie-poster-placeholder">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-              <rect x="2" y="2" width="20" height="20" rx="2"/>
-              <path d="M7 8h10M7 12h10M7 16h6"/>
-            </svg>
-          </div>
-        </div>
-
-        <div class="movie-info-col">
-          <h1 class="movie-title">{{ movie.title }}</h1>
-          <p v-if="movie.original_title !== movie.title" class="movie-original-title">{{ movie.original_title }}</p>
-          <p v-if="movie.tagline" class="movie-tagline">« {{ movie.tagline }} »</p>
-
-          <div class="movie-meta">
-            <span v-if="releaseYear" class="movie-meta-item">{{ releaseYear }}</span>
-            <span v-if="movie.runtime" class="movie-meta-item">{{ formattedRuntime }}</span>
-          </div>
-
-          <div v-if="movie.genres.length || hasWarning" class="movie-genres">
-            <span v-if="hasWarning" class="movie-genre-warning">⚠ Genre déconseillé</span>
-            <span v-for="genre in movie.genres" :key="genre.id" class="movie-genre-tag">{{ genre.name }}</span>
-          </div>
-
-          <div v-if="movie.vote_count > 0" class="movie-rating">
-            <span class="movie-rating-score">{{ movie.vote_average.toFixed(1) }}</span>
-            <span class="movie-rating-label">/ 10 · {{ movie.vote_count.toLocaleString('fr-FR') }} votes</span>
-          </div>
-
-          <p v-if="movie.overview" class="movie-overview">{{ movie.overview }}</p>
-        </div>
-      </div>
-
-      <div v-if="providers?.flatrate?.length || providers?.rent?.length" class="providers">
-        <div class="providers-header">
-          <span class="providers-label">Disponible sur</span>
-          <a :href="providers!.link" target="_blank" rel="noopener" class="providers-jwlink">JustWatch →</a>
-        </div>
-        <div v-if="providers!.flatrate?.length" class="providers-group">
-          <span class="providers-type">Abonnement</span>
-          <div class="providers-list">
-            <span v-for="p in providers!.flatrate" :key="p.provider_id" class="provider-item" :data-name="p.provider_name" tabindex="0" :aria-label="p.provider_name">
-              <img :src="getPosterUrl(p.logo_path, 'original')!" :alt="p.provider_name" class="provider-logo" />
-            </span>
-          </div>
-        </div>
-        <div v-if="providers!.rent?.length" class="providers-group">
-          <span class="providers-type">Location</span>
-          <div class="providers-list">
-            <span v-for="p in providers!.rent" :key="p.provider_id" class="provider-item" :data-name="p.provider_name" tabindex="0" :aria-label="p.provider_name">
-              <img :src="getPosterUrl(p.logo_path, 'original')!" :alt="p.provider_name" class="provider-logo" />
-            </span>
-          </div>
-        </div>
-        <p class="providers-disclaimer">Netflix non inclus · données JustWatch</p>
-      </div>
-
-      <button
-        v-if="pendingDraw && movie && (Number(releaseYear) === pendingDraw.year || isChosen)"
-        class="choose-btn"
-        :class="{ 'choose-btn--chosen': isChosen }"
-        @click="handleChoose"
-      >
-        {{ isChosen ? 'Retirer ce film' : 'Choisir ce film' }}
-      </button>
+      <template v-else-if="movie">
+        <MovieDetailView :movie="movie" :providers="providers">
+          <button
+            v-if="pendingDraw && (Number(releaseYear) === pendingDraw.year || isChosen)"
+            class="choose-btn"
+            :class="{ 'choose-btn--chosen': isChosen }"
+            @click="handleChoose"
+          >
+            {{ isChosen ? 'Retirer ce film' : 'Choisir ce film' }}
+          </button>
+        </MovieDetailView>
+      </template>
 
       <p v-if="!pending && !movie" class="movie-error">Impossible de charger ce film.</p>
     </div>
@@ -91,11 +31,10 @@
 
 <script setup lang="ts">
 import type { TmdbMovieDetail, TmdbWatchProvidersResponse } from '~/types'
-import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
 
 const router = useRouter()
 const route = useRoute()
-const { getMovieDetail, getPosterUrl, getWatchProviders } = useTmdb()
+const { getMovieDetail, getWatchProviders } = useTmdb()
 const { pendingDraw, pendingMovie, load: loadPendingDraw, setFilm, clearFilm } = usePendingDraw()
 const { requireAuth } = useAuth()
 
@@ -110,23 +49,8 @@ const { data: watchProvidersData } = await useAsyncData<TmdbWatchProvidersRespon
 )
 
 const providers = computed(() => watchProvidersData.value?.results?.['FR'] ?? null)
-
-const posterUrl = computed(() => movie.value ? getPosterUrl(movie.value.poster_path, 'w342') : null)
-
-const releaseYear = computed(() => {
-  if (!movie.value?.release_date) return null
-  return movie.value.release_date.split('-')[0]
-})
-
-const formattedRuntime = computed(() => {
-  if (!movie.value?.runtime) return null
-  const h = Math.floor(movie.value.runtime / 60)
-  const m = movie.value.runtime % 60
-  return h > 0 ? `${h}h${m > 0 ? String(m).padStart(2, '0') : ''}` : `${m}min`
-})
-
+const releaseYear = computed(() => movie.value?.release_date?.split('-')[0] ?? null)
 const isChosen = computed(() => pendingMovie.value?.tmdb_id === movie.value?.id)
-const hasWarning = computed(() => movie.value?.genres.some(g => TMDB_WARNING_GENRES.includes(g.id)) ?? false)
 
 async function handleChoose() {
   if (!movie.value) return
@@ -147,7 +71,7 @@ await loadPendingDraw()
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px 24px 24px;
+  padding: 20px 20px 32px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -166,234 +90,23 @@ await loadPendingDraw()
   padding: 48px 0;
 }
 
-.movie-content {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-}
-
-.movie-poster-col {
-  flex-shrink: 0;
-  width: 120px;
-}
-
-.movie-poster {
-  width: 100%;
-  border-radius: var(--r-md);
-  display: block;
-}
-
-.movie-poster-placeholder {
-  width: 100%;
-  aspect-ratio: 2/3;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  display: flex;
+.movie-back {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: var(--text-faint);
-}
-
-.movie-info-col {
-  flex: 1;
-  min-width: 0;
-}
-
-.movie-title {
-  font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0 0 4px;
-  line-height: 1.2;
-  letter-spacing: 0.02em;
-}
-
-.movie-original-title {
-  font-size: 13px;
-  color: var(--text-faint);
-  margin: 0 0 10px;
-  font-style: italic;
-}
-
-.movie-tagline {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin: 0 0 14px;
-  font-style: italic;
-  line-height: 1.5;
-}
-
-.movie-meta {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-.movie-meta-item {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.movie-meta-item + .movie-meta-item::before {
-  content: '·';
-  margin-right: 10px;
-  color: var(--text-faint);
-}
-
-.movie-genres {
-  display: flex;
   gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-
-.movie-genre-tag {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  background: none;
+  border: none;
   color: var(--text-secondary);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 3px 10px;
-}
-
-.movie-genre-warning {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #f5a623;
-  background: rgba(245, 166, 35, 0.08);
-  border: 1px solid rgba(245, 166, 35, 0.4);
-  border-radius: 999px;
-  padding: 3px 10px;
-}
-
-.movie-rating {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.movie-rating-score {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.movie-rating-label {
-  font-size: 12px;
-  color: var(--text-faint);
-}
-
-.movie-overview {
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-.providers {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.providers-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.providers-label {
+  font-family: var(--font-ui);
   font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.providers-jwlink {
-  font-size: 12px;
-  color: var(--text-faint);
-  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 24px;
+  transition: color 150ms;
 }
 
 @media (hover: hover) {
-  .providers-jwlink:hover { color: var(--text-secondary); }
-}
-
-.providers-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.providers-type {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.providers-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.provider-item {
-  position: relative;
-  display: inline-block;
-  outline: none;
-}
-
-.provider-item::after {
-  content: attr(data-name);
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--surface-raised, var(--surface));
-  color: var(--text);
-  border: 1px solid var(--border-mid);
-  border-radius: 4px;
-  font-family: var(--font-ui);
-  font-size: 10px;
-  white-space: nowrap;
-  padding: 3px 6px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 120ms;
-  z-index: 10;
-}
-
-.provider-item:hover::after,
-.provider-item:focus::after {
-  opacity: 1;
-}
-
-.provider-logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  object-fit: cover;
-  display: block;
-}
-
-.providers-disclaimer {
-  font-size: 11px;
-  color: var(--text-faint);
-  font-style: italic;
-  margin: 0;
+  .movie-back:hover { color: var(--text); }
 }
 
 .choose-btn {
@@ -407,9 +120,10 @@ await loadPendingDraw()
   background: var(--accent);
   border: none;
   border-radius: var(--r-sm);
-  padding: 12px;
+  padding: 13px;
   cursor: pointer;
   transition: opacity 150ms;
+  letter-spacing: 0.03em;
 }
 
 .choose-btn--chosen {

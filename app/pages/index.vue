@@ -61,7 +61,7 @@ const yearRevealed = ref(false)
 const resultDisplay = ref<HTMLElement | null>(null)
 
 function drawYear() {
-  const maxYear = new Date().getFullYear()
+  const maxYear = new Date().getFullYear() - 1
   const total = maxYear - MIN_YEAR + 1
   let year: number
 
