@@ -59,11 +59,18 @@
       <dl v-if="director || mainCast.length || mainProductionCompanies.length" class="mdv-credits">
         <div v-if="director" class="mdv-credit-row">
           <dt>Réalisation</dt>
-          <dd>{{ director.name }}</dd>
+          <dd>
+            <button class="mdv-person-btn" @click="openPerson(director.id)">{{ director.name }}</button>
+          </dd>
         </div>
         <div v-if="mainCast.length" class="mdv-credit-row">
           <dt>Avec</dt>
-          <dd>{{ mainCast.map(a => a.name).join(', ') }}</dd>
+          <dd class="mdv-cast-list">
+            <template v-for="(actor, i) in mainCast" :key="actor.id">
+              <button class="mdv-person-btn" @click="openPerson(actor.id)">{{ actor.name }}</button>
+              <span v-if="i < mainCast.length - 1" class="mdv-cast-sep">, </span>
+            </template>
+          </dd>
         </div>
         <div v-if="mainProductionCompanies.length" class="mdv-credit-row">
           <dt>Production</dt>
@@ -127,6 +134,7 @@ const props = defineProps<{
 }>()
 
 const { getPosterUrl } = useTmdb()
+const { openPerson } = usePersonModal()
 
 const posterUrl = computed(() => props.movie ? getPosterUrl(props.movie.poster_path, 'w342') : null)
 const title = computed(() => props.movie?.title ?? props.fallbackTitle ?? '')
@@ -420,6 +428,30 @@ function formatDate(dateStr: string) {
   color: var(--text);
   margin: 0;
   line-height: 1.4;
+}
+
+.mdv-person-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .mdv-person-btn:hover { color: var(--accent); }
+}
+
+.mdv-cast-list {
+  display: inline;
+}
+
+.mdv-cast-sep {
+  color: var(--text);
+  font-size: 13px;
 }
 
 .mdv-journal-meta {

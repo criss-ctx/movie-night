@@ -83,6 +83,7 @@
     <ConfirmModal />
     <LoginModal />
     <EditEntryModal />
+    <PersonModal />
   </div>
 </template>
 
