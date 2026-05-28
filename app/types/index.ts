@@ -133,6 +133,44 @@ export interface TmdbSearchResponse {
 
 export type TmdbDiscoverResponse = TmdbSearchResponse
 
+export interface TmdbPersonMovieCredit {
+  id: number
+  title: string
+  release_date: string
+  poster_path: string | null
+  vote_count: number
+  popularity: number
+  character?: string
+  job?: string
+}
+
+export interface TmdbPersonImage {
+  file_path: string
+  width: number
+  height: number
+  vote_average: number
+  vote_count: number
+}
+
+export interface TmdbPersonDetail {
+  id: number
+  name: string
+  biography: string
+  birthday: string | null
+  deathday: string | null
+  place_of_birth: string | null
+  profile_path: string | null
+  known_for_department: string
+  popularity: number
+  movie_credits: {
+    cast: TmdbPersonMovieCredit[]
+    crew: TmdbPersonMovieCredit[]
+  }
+  images?: {
+    profiles: TmdbPersonImage[]
+  }
+}
+
 export interface ConfirmState {
   visible: boolean
   message: string
