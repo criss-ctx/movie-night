@@ -12,7 +12,16 @@ sécuriser le film secret, et poser la fondation du système de votes.
 | 1 | Lier les profils aux comptes Auth | ✅ Terminé |
 | 2 | Magic link (remplace email + mot de passe) | ✅ Terminé |
 | 3 | Film secret (`pending_movie`) | ✅ Terminé — RLS validée, colonnes `tmdb_id`/`title` supprimées de `pending_draw` (2026-05-28) |
-| 4 | Votes / notes | ⬜ À faire |
+| 4 | Votes / notes | 🔶 En cours — voir `PLAN_VOTES.md` |
+
+### Notes Phase 4
+
+- Suivi détaillé dans `PLAN_VOTES.md`
+- Système multi-catégories (rating_film, rating_theme, rating_pick + booléens)
+- Résultats masqués tant que tout le groupe n'a pas voté
+- Stats globales = phase séparée
+
+---
 
 ### Notes Phase 1 (ajouts post-implémentation)
 

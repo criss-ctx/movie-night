@@ -171,6 +171,28 @@ export interface TmdbPersonDetail {
   }
 }
 
+export interface Vote {
+  id: number
+  journal_id: number
+  profile_id: number
+  rating_film: number | null
+  rating_pick: number | null
+  already_seen: boolean | null
+  happy_to_rewatch: boolean | null
+  prior_knowledge: boolean | null
+  wanted_to_see: boolean | null
+  surprised_by_pick: boolean | null
+  created_at: string
+  profiles?: { name: string; avatar?: string | null }
+}
+
+export type VoteInput = Pick<Vote,
+  'rating_film' | 'rating_pick' |
+  'already_seen' | 'happy_to_rewatch' |
+  'prior_knowledge' | 'wanted_to_see' |
+  'surprised_by_pick'
+>
+
 export interface ConfirmState {
   visible: boolean
   message: string
