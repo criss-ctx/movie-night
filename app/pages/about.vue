@@ -119,7 +119,7 @@ const router = useRouter()
 }
 
 .about-section-text {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   line-height: 1.6;
   margin: 0;
@@ -129,7 +129,7 @@ const router = useRouter()
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--accent);
   text-decoration: none;

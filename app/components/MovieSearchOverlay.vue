@@ -187,7 +187,7 @@ function onQueryInput() {
 
 .search-status,
 .search-hint {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-faint);
   padding: 24px 16px;
   text-align: center;
@@ -224,13 +224,13 @@ function onQueryInput() {
 
 .result-genre-warning {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 14px;
   color: #f5a623;
 }
 
 .result-year {
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--accent);
 }
@@ -244,7 +244,7 @@ function onQueryInput() {
 .search-confirm {
   width: 100%;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   background: var(--surface);
   border: 1px solid var(--border-mid);

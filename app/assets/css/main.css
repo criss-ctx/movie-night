@@ -150,7 +150,7 @@ body {
 }
 
 .search-status {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-faint);
   padding: 14px 16px;
   text-align: center;
@@ -193,13 +193,13 @@ body {
 
 .search-result-genre-warning {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 14px;
   color: #f5a623;
 }
 
 .search-result-year {
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--accent);
 }
@@ -211,7 +211,7 @@ body {
 }
 
 .form-group label {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.12em;
   color: var(--accent);
@@ -261,7 +261,7 @@ body {
   border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -297,7 +297,7 @@ body {
   border: none;
   color: var(--text-faint);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   padding: 0 0 20px;
   cursor: pointer;

@@ -253,7 +253,7 @@ function formatDate(dateStr: string) {
 }
 
 .mdv-original-title {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-faint);
   font-style: italic;
   margin: 0;
@@ -266,7 +266,7 @@ function formatDate(dateStr: string) {
 }
 
 .mdv-fact {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -284,7 +284,7 @@ function formatDate(dateStr: string) {
 }
 
 .mdv-genre-tag {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -297,7 +297,7 @@ function formatDate(dateStr: string) {
 
 .mdv-cert-badge {
   position: relative;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--text-secondary);
@@ -319,7 +319,7 @@ function formatDate(dateStr: string) {
   border: 1px solid var(--border-mid, var(--border));
   border-radius: 4px;
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: 0;
   white-space: nowrap;
@@ -336,7 +336,7 @@ function formatDate(dateStr: string) {
 }
 
 .mdv-genre-warning {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -369,13 +369,13 @@ function formatDate(dateStr: string) {
 }
 
 .mdv-rating-sub span:first-child {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .mdv-rating-votes {
-  font-size: 11px;
+  font-size: 15px;
   color: var(--text-faint);
 }
 
@@ -415,7 +415,7 @@ function formatDate(dateStr: string) {
   border: none;
   padding: 0;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 15px;
   color: var(--accent);
   cursor: pointer;
   display: block;
@@ -436,7 +436,7 @@ function formatDate(dateStr: string) {
 }
 
 .mdv-credits dt {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -446,7 +446,7 @@ function formatDate(dateStr: string) {
 }
 
 .mdv-credits dd {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text);
   margin: 0;
   line-height: 1.4;
@@ -457,7 +457,7 @@ function formatDate(dateStr: string) {
   border: none;
   padding: 0;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text);
   cursor: pointer;
   transition: color 150ms;
@@ -473,14 +473,14 @@ function formatDate(dateStr: string) {
 
 .mdv-cast-sep {
   color: var(--text);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .mdv-journal-meta {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-secondary);
   border-top: 1px solid var(--border);
   padding-top: 14px;
@@ -505,13 +505,13 @@ function formatDate(dateStr: string) {
 }
 
 .mdv-providers-label {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .mdv-providers-jwlink {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-faint);
   text-decoration: none;
 }
@@ -527,7 +527,7 @@ function formatDate(dateStr: string) {
 }
 
 .mdv-providers-type {
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -557,7 +557,7 @@ function formatDate(dateStr: string) {
   border: 1px solid var(--border-mid);
   border-radius: 4px;
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 14px;
   white-space: nowrap;
   padding: 3px 6px;
   pointer-events: none;
@@ -572,15 +572,15 @@ function formatDate(dateStr: string) {
 }
 
 .mdv-provider-logo {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border-radius: 6px;
   object-fit: cover;
   display: block;
 }
 
 .mdv-providers-disclaimer {
-  font-size: 11px;
+  font-size: 15px;
   color: var(--text-faint);
   font-style: italic;
   margin: 0;
@@ -595,7 +595,7 @@ function formatDate(dateStr: string) {
   width: 100%;
   margin-top: 8px;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--surface);

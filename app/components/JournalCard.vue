@@ -242,14 +242,14 @@ function formatDate(dateStr: string) {
 }
 
 .entry-year {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--accent);
   flex-shrink: 0;
 }
 
 .entry-meta {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-secondary);
 }
 

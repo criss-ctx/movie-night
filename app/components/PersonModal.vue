@@ -247,7 +247,7 @@ const topKnownFilms = computed((): TmdbPersonMovieCredit[] => {
 }
 
 .pm-dept {
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -256,13 +256,13 @@ const topKnownFilms = computed((): TmdbPersonMovieCredit[] => {
 }
 
 .pm-age {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
 }
 
 .pm-bio {
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.7;
   color: var(--text-secondary);
   margin: 0;
@@ -277,7 +277,7 @@ const topKnownFilms = computed((): TmdbPersonMovieCredit[] => {
 }
 
 .pm-film-chip {
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--surface-raised);
@@ -288,7 +288,7 @@ const topKnownFilms = computed((): TmdbPersonMovieCredit[] => {
 
 .pm-full-link {
   display: inline-block;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--accent);
   text-decoration: none;

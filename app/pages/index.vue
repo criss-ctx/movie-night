@@ -227,7 +227,7 @@ await Promise.all([loadProfiles(), loadJournal(), loadPendingDraw()])
 
 .profile-btn {
   font-family: var(--font-ui);
-  font-size: 0.85rem;
+  font-size: 15px;
   padding: 7px 16px;
   min-height: 36px;
   border: 1px solid var(--border-mid);
@@ -245,7 +245,7 @@ await Promise.all([loadProfiles(), loadJournal(), loadPendingDraw()])
 }
 
 .last-chooser {
-  font-size: 0.8rem;
+  font-size: 14px;
   color: var(--text-faint);
   margin: 0 0 20px;
   min-height: 1em;
@@ -354,7 +354,7 @@ await Promise.all([loadProfiles(), loadJournal(), loadPendingDraw()])
 .memoriser-btn {
   margin-top: 16px;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -382,7 +382,7 @@ await Promise.all([loadProfiles(), loadJournal(), loadPendingDraw()])
 .discover-btn {
   margin-top: 16px;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
