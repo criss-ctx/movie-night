@@ -171,6 +171,15 @@ export interface TmdbPersonDetail {
   }
 }
 
+export interface TmdbVideo {
+  key: string
+  site: string
+  type: string
+  official: boolean
+  name: string
+  iso_639_1: string
+}
+
 export interface Vote {
   id: number
   journal_id: number

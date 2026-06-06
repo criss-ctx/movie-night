@@ -10,6 +10,12 @@
             <path d="M7 8h10M7 12h10M7 16h6"/>
           </svg>
         </div>
+        <button v-if="trailerKey" class="mdv-trailer-btn" @click="showEmbed = !showEmbed">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+          {{ showEmbed ? 'Masquer' : 'Bande annonce' }}
+        </button>
       </div>
 
       <div class="mdv-hero-info">
@@ -44,6 +50,16 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div v-if="trailerKey && showEmbed" class="mdv-trailer-embed">
+      <iframe
+        :src="`https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1`"
+        allow="autoplay; encrypted-media; fullscreen"
+        allowfullscreen
+        class="mdv-trailer-iframe"
+        title="Bande annonce"
+      />
     </div>
 
     <div class="mdv-body">
@@ -133,8 +149,14 @@ const props = defineProps<{
   journalMeta?: { name: string | null; date: string } | null
 }>()
 
-const { getPosterUrl } = useTmdb()
+const { getPosterUrl, getBestTrailer } = useTmdb()
 const { openPerson } = usePersonModal()
+
+const { data: trailerKey } = await useAsyncData(
+  `trailer-${props.movie?.id ?? 'none'}`,
+  () => props.movie?.id ? getBestTrailer(props.movie!.id) : Promise.resolve(null)
+)
+const showEmbed = ref(false)
 
 const posterUrl = computed(() => props.movie ? getPosterUrl(props.movie.poster_path, 'w342') : null)
 const title = computed(() => props.movie?.title ?? props.fallbackTitle ?? '')
@@ -562,5 +584,51 @@ function formatDate(dateStr: string) {
   color: var(--text-faint);
   font-style: italic;
   margin: 0;
+}
+
+/* Trailer */
+.mdv-trailer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-sm);
+  padding: 7px 0;
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms, background 150ms;
+}
+
+@media (hover: hover) {
+  .mdv-trailer-btn:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+    background: var(--surface-raised);
+  }
+}
+
+.mdv-trailer-embed {
+  margin-top: 12px;
+  margin-bottom: 20px;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  background: #000;
+}
+
+.mdv-trailer-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 </style>
