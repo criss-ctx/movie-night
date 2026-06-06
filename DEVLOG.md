@@ -258,7 +258,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON votes TO anon, authenticated;
 - Fiches personnes (modal `PersonModal.vue`)
 - Streaming availability via JustWatch (données TMDB) — Netflix exclu des données disponibles
 - Bandes annonces : embed YouTube via `youtube-nocookie.com`, FR prioritaire, fallback EN
-- Backdrop ambiant : `backdrop_path` (w1280) poussé dans `useState('appBackdropUrl')` depuis `MovieDetailView`, rendu à `opacity: 0.05` derrière `app-content` dans `default.vue`
+- Backdrop ambiant : `backdrop_path` (w1280) poussé dans `useState('appBackdropUrl')` depuis `MovieDetailView`, rendu à `opacity: 0.05` (dark) / `0.12` (light) derrière `app-content` dans `default.vue`
 
 ### Décisions de design TMDB
 
@@ -337,4 +337,4 @@ Section "Année 2025" puis "Année 2024" :
 - **Bandes annonces** — route `/api/tmdb/videos/[id]`, `getBestTrailer` dans `useTmdb`, bouton embed YouTube sous l'affiche dans `MovieDetailView` (FR prioritaire, fallback EN)
 - **Design system typographique** — tokens `--text-caption/meta/label/body/title` + `--leading-*` dans `:root` (main.css), propagés dans 15 fichiers ; textes de lecture à `var(--text-body)` = 16px
 - **Accessibilité mobile** — passage global des polices (+2px), logos providers 32→44px, icônes tab bar 20→24px, slider thumb votes 20→28px
-- **Backdrop ambiant** — `backdropUrl` (w1280) via `useState` depuis `MovieDetailView`, rendu à `opacity: 0.05` derrière `app-content` ; `isolation: isolate` + `z-index: -1`
+- **Backdrop ambiant** — `backdropUrl` (w1280) via `useState` depuis `MovieDetailView`, rendu à `opacity: 0.05` (dark) / `0.12` (light) derrière `app-content` ; `isolation: isolate` + `z-index: -1` ; sélecteur `[data-theme="light"]` sur `<html>` pour l'opacité différenciée

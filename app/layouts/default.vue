@@ -126,6 +126,10 @@ onMounted(init)
   opacity: 0.05;
 }
 
+[data-theme="light"] .app-backdrop-img {
+  opacity: 0.12;
+}
+
 .tab-bar {
   flex-shrink: 0;
   display: flex;
