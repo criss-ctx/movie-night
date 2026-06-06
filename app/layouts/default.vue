@@ -45,6 +45,9 @@
       </div>
     </header>
     <main class="app-content">
+      <div v-if="appBackdropUrl" class="app-backdrop" aria-hidden="true">
+        <img :src="appBackdropUrl" alt="" class="app-backdrop-img" />
+      </div>
       <slot />
     </main>
     <nav class="tab-bar">
@@ -88,6 +91,8 @@
 </template>
 
 <script setup lang="ts">
+const appBackdropUrl = useState<string | null>('appBackdropUrl', () => null)
+
 const { user, signOut, showLoginModal } = useAuth()
 const { theme, toggle, init } = useTheme()
 const { profiles } = useProfiles()
@@ -100,6 +105,31 @@ onMounted(init)
 </script>
 
 <style scoped>
+.app-content {
+  isolation: isolate;
+}
+
+.app-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.app-backdrop-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  display: block;
+  opacity: 0.05;
+}
+
+[data-theme="light"] .app-backdrop-img {
+  opacity: 0.12;
+}
+
 .tab-bar {
   flex-shrink: 0;
   display: flex;
