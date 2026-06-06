@@ -303,9 +303,9 @@ async function toggleFilm(movie: TmdbMovie) {
   height: 26px;
   background: rgba(0, 0, 0, 0.78);
   color: #f5a623;
-  border: 1.5px solid rgba(245, 166, 35, 0.6);
+  border: 2px solid rgba(245, 166, 35, 0.6);
   border-radius: 50%;
-  font-size: 14px;
+  font-size: var(--text-meta);
   line-height: 1;
   cursor: pointer;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
@@ -323,7 +323,7 @@ async function toggleFilm(movie: TmdbMovie) {
   background: rgba(0, 0, 0, 0.72);
   color: #f5a623;
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: var(--text-meta);
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -413,7 +413,7 @@ async function toggleFilm(movie: TmdbMovie) {
 }
 
 .movie-card-title {
-  font-size: 14px;
+  font-size: var(--text-meta);
   font-weight: 500;
   color: var(--text);
   line-height: 1.3;
@@ -424,13 +424,13 @@ async function toggleFilm(movie: TmdbMovie) {
 }
 
 .movie-card-year {
-  font-size: 15px;
+  font-size: var(--text-label);
   color: var(--text-faint);
 }
 
 .discover-loading-more {
   text-align: center;
-  font-size: 15px;
+  font-size: var(--text-label);
   color: var(--text-faint);
   padding: 20px 0 8px;
 }

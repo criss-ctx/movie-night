@@ -98,7 +98,7 @@ await loadPendingDraw()
   border: none;
   color: var(--text-secondary);
   font-family: var(--font-ui);
-  font-size: 15px;
+  font-size: var(--text-label);
   cursor: pointer;
   padding: 0;
   margin-bottom: 24px;

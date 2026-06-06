@@ -112,14 +112,15 @@ const router = useRouter()
 
 .about-section-title {
   font-family: var(--font-ui);
-  font-size: 15px;
+  font-size: var(--text-label);
   font-weight: 600;
   color: var(--text);
   margin: 4px 0 0;
 }
 
 .about-section-text {
-  font-size: 15px;
+  font-size: var(--text-body);
+  line-height: var(--leading-prose);
   color: var(--text-secondary);
   line-height: 1.6;
   margin: 0;
@@ -129,7 +130,7 @@ const router = useRouter()
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 15px;
+  font-size: var(--text-label);
   font-weight: 500;
   color: var(--accent);
   text-decoration: none;

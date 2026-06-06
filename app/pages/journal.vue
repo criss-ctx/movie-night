@@ -97,7 +97,7 @@ await Promise.all([loadProfiles(), loadJournal()])
 
 .filter-btn {
   font-family: var(--font-ui);
-  font-size: 15px;
+  font-size: var(--text-label);
   padding: 6px 14px;
   min-height: 34px;
   border: 1px solid var(--border-mid);

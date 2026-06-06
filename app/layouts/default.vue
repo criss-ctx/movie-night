@@ -120,7 +120,7 @@ onMounted(init)
 }
 
 .app-footer-link {
-  font-size: 13px;
+  font-size: var(--text-caption);
   color: var(--text-faint);
   text-decoration: none;
   transition: color 150ms;
@@ -164,7 +164,7 @@ onMounted(init)
 
 .tab-label {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--text-meta);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
