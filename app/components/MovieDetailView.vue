@@ -10,6 +10,12 @@
             <path d="M7 8h10M7 12h10M7 16h6"/>
           </svg>
         </div>
+        <button v-if="trailerKey" class="mdv-trailer-btn" @click="showEmbed = !showEmbed">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+          {{ showEmbed ? 'Masquer' : 'Bande annonce' }}
+        </button>
       </div>
 
       <div class="mdv-hero-info">
@@ -44,6 +50,16 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div v-if="trailerKey && showEmbed" class="mdv-trailer-embed">
+      <iframe
+        :src="`https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1`"
+        allow="autoplay; encrypted-media; fullscreen"
+        allowfullscreen
+        class="mdv-trailer-iframe"
+        title="Bande annonce"
+      />
     </div>
 
     <div class="mdv-body">
@@ -106,31 +122,6 @@
         </div>
       </div>
       <p class="mdv-providers-disclaimer">Netflix non inclus · données JustWatch</p>
-    </div>
-
-    <div v-if="trailerKey" class="mdv-trailer">
-      <div class="mdv-trailer-bar">
-        <button class="mdv-trailer-btn" @click="showEmbed = !showEmbed">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <polygon points="5,3 19,12 5,21"/>
-          </svg>
-          {{ showEmbed ? 'Masquer' : 'Bande annonce' }}
-        </button>
-        <a
-          :href="`https://www.youtube.com/watch?v=${trailerKey}`"
-          target="_blank" rel="noopener noreferrer"
-          class="mdv-trailer-link"
-        >↗ YouTube</a>
-      </div>
-      <div v-if="showEmbed" class="mdv-trailer-embed">
-        <iframe
-          :src="`https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1`"
-          allow="autoplay; encrypted-media; fullscreen"
-          allowfullscreen
-          class="mdv-trailer-iframe"
-          title="Bande annonce"
-        />
-      </div>
     </div>
 
     <slot />
@@ -596,26 +587,21 @@ function formatDate(dateStr: string) {
 }
 
 /* Trailer */
-.mdv-trailer { margin-top: 20px; }
-
-.mdv-trailer-bar {
+.mdv-trailer-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.mdv-trailer-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--surface);
   border: 1px solid var(--border-mid);
   border-radius: var(--r-sm);
-  padding: 8px 14px;
+  padding: 7px 0;
   cursor: pointer;
   transition: color 150ms, border-color 150ms, background 150ms;
 }
@@ -628,20 +614,9 @@ function formatDate(dateStr: string) {
   }
 }
 
-.mdv-trailer-link {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  color: var(--text-faint);
-  text-decoration: none;
-  transition: color 150ms;
-}
-
-@media (hover: hover) {
-  .mdv-trailer-link:hover { color: var(--text-secondary); }
-}
-
 .mdv-trailer-embed {
   margin-top: 12px;
+  margin-bottom: 20px;
   border-radius: var(--r-md);
   overflow: hidden;
   aspect-ratio: 16 / 9;
