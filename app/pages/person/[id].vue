@@ -279,7 +279,7 @@ const directorGroups = computed(() =>
 
 .pdv-loading {
   color: var(--text-faint);
-  font-size: 14px;
+  font-size: var(--text-meta);
   text-align: center;
   padding: 48px 0;
   margin: 0;
@@ -293,7 +293,7 @@ const directorGroups = computed(() =>
   border: none;
   color: var(--text-secondary);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--text-label);
   cursor: pointer;
   padding: 0;
   margin-bottom: 24px;
@@ -366,7 +366,7 @@ const directorGroups = computed(() =>
   gap: 4px;
   background: rgba(0, 0, 0, 0.62);
   color: #fff;
-  font-size: 11px;
+  font-size: var(--text-label);
   font-weight: 600;
   padding: 3px 6px;
   border-radius: 4px;
@@ -393,7 +393,7 @@ const directorGroups = computed(() =>
 }
 
 .pdv-dept {
-  font-size: 11px;
+  font-size: var(--text-label);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -411,7 +411,7 @@ const directorGroups = computed(() =>
 .pdv-fact-row { display: contents; }
 
 .pdv-facts dt {
-  font-size: 10px;
+  font-size: var(--text-meta);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -421,7 +421,7 @@ const directorGroups = computed(() =>
 }
 
 .pdv-facts dd {
-  font-size: 12px;
+  font-size: var(--text-meta);
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
@@ -438,7 +438,7 @@ const directorGroups = computed(() =>
 }
 
 .pdv-bio {
-  font-size: 14px;
+  font-size: var(--text-meta);
   line-height: 1.8;
   color: var(--text-secondary);
   margin: 0;
@@ -450,7 +450,7 @@ const directorGroups = computed(() =>
   border: none;
   padding: 0;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--text-label);
   color: var(--accent);
   cursor: pointer;
   display: block;
@@ -494,7 +494,7 @@ const directorGroups = computed(() =>
 }
 
 .pdv-year-label {
-  font-size: 11px;
+  font-size: var(--text-label);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -518,7 +518,7 @@ const directorGroups = computed(() =>
 }
 
 .pdv-film-link {
-  font-size: 14px;
+  font-size: var(--text-meta);
   font-weight: 500;
   color: var(--text);
   text-decoration: none;
@@ -530,7 +530,7 @@ const directorGroups = computed(() =>
 }
 
 .pdv-film-role {
-  font-size: 12px;
+  font-size: var(--text-meta);
   color: var(--text-faint);
   font-style: italic;
 }
@@ -606,7 +606,7 @@ const directorGroups = computed(() =>
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 12px;
+  font-size: var(--text-meta);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
   letter-spacing: 0.08em;

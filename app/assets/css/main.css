@@ -24,6 +24,18 @@
 
   --r-sm: 8px;
   --r-md: 12px;
+
+  /* Type scale */
+  --text-caption: 12px;  /* fine print, disclaimers, small badges */
+  --text-meta:    14px;  /* metadata: year, genre, tags, timestamps */
+  --text-label:   15px;  /* UI: buttons, form labels, nav */
+  --text-body:    16px;  /* reading: overviews, bios, descriptions */
+  --text-title:   20px;  /* section headings, card emphasis */
+
+  /* Line heights */
+  --leading-tight:  1.2;
+  --leading-ui:     1.4;
+  --leading-prose:  1.65;
 }
 
 /* ============================================================
@@ -150,7 +162,7 @@ body {
 }
 
 .search-status {
-  font-size: 13px;
+  font-size: var(--text-label);
   color: var(--text-faint);
   padding: 14px 16px;
   text-align: center;
@@ -168,7 +180,7 @@ body {
   border-bottom: 1px solid var(--border);
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: 15px;
+  font-size: var(--text-label);
   text-align: left;
   cursor: pointer;
   transition: background 120ms;
@@ -193,13 +205,13 @@ body {
 
 .search-result-genre-warning {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 14px;
   color: #f5a623;
 }
 
 .search-result-year {
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: var(--text-label);
   font-weight: 600;
   color: var(--accent);
 }
@@ -211,7 +223,7 @@ body {
 }
 
 .form-group label {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.12em;
   color: var(--accent);
@@ -261,7 +273,7 @@ body {
   border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--text-label);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -297,7 +309,7 @@ body {
   border: none;
   color: var(--text-faint);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--text-label);
   font-weight: 500;
   padding: 0 0 20px;
   cursor: pointer;

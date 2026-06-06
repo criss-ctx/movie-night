@@ -330,7 +330,7 @@ async function handleModify() {
   border: none;
   color: var(--text-secondary);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--text-label);
   cursor: pointer;
   padding: 0;
   margin-bottom: 24px;
@@ -343,7 +343,7 @@ async function handleModify() {
 
 .entry-status {
   color: var(--text-faint);
-  font-size: 14px;
+  font-size: var(--text-meta);
   text-align: center;
   padding: 48px 0;
 }
@@ -354,7 +354,7 @@ async function handleModify() {
   gap: 7px;
   margin-top: 24px;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--text-label);
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--surface);
@@ -389,7 +389,7 @@ async function handleModify() {
 
 .vs-title {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: var(--text-label);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.09em;
@@ -399,7 +399,7 @@ async function handleModify() {
 
 .vs-count {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: var(--text-label);
   color: var(--text-faint);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -423,12 +423,12 @@ async function handleModify() {
 }
 
 .vs-who-name {
-  font-size: 11px;
+  font-size: var(--text-label);
   color: var(--text-secondary);
 }
 
 .vs-who-badge {
-  font-size: 11px;
+  font-size: var(--text-label);
   color: var(--text-faint);
   transition: color 150ms;
 }
@@ -448,7 +448,7 @@ async function handleModify() {
 
 .vs-avg-row { display: flex; align-items: center; gap: 10px; }
 .vs-avg-label {
-  font-size: 12px;
+  font-size: var(--text-meta);
   color: var(--text-secondary);
   flex: 1;
 }
@@ -472,7 +472,7 @@ async function handleModify() {
 .vs-result:last-child { border-bottom: 1px solid var(--border); }
 
 .vs-result-name {
-  font-size: 13px;
+  font-size: var(--text-label);
   color: var(--text-secondary);
   min-width: 52px;
 }
@@ -486,7 +486,7 @@ async function handleModify() {
 }
 
 .vs-picker-badge {
-  font-size: 10px;
+  font-size: var(--text-meta);
   font-weight: 600;
   color: var(--accent);
   border: 1px solid var(--accent);
@@ -497,7 +497,7 @@ async function handleModify() {
 
 .vs-tags { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
 .vs-tag {
-  font-size: 10px;
+  font-size: var(--text-meta);
   color: var(--text-faint);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -520,7 +520,7 @@ async function handleModify() {
 
 .vs-form-title {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--text-label);
   font-weight: 600;
   color: var(--text);
   margin: 0;
@@ -529,12 +529,12 @@ async function handleModify() {
 .vs-field { display: flex; flex-direction: column; gap: 10px; }
 .vs-field-header { display: flex; align-items: center; justify-content: space-between; }
 .vs-field-label {
-  font-size: 12px;
+  font-size: var(--text-meta);
   color: var(--text-secondary);
 }
 .vs-field-value {
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: var(--text-meta);
   font-weight: 600;
   color: var(--accent);
 }
@@ -553,8 +553,8 @@ async function handleModify() {
 .rating-slider:active { cursor: grabbing; }
 .rating-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: var(--accent);
   cursor: grab;
@@ -563,8 +563,8 @@ async function handleModify() {
 }
 .rating-slider:active::-webkit-slider-thumb { transform: scale(1.2); cursor: grabbing; }
 .rating-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: var(--accent);
   border: none;
@@ -579,7 +579,7 @@ async function handleModify() {
   border-left: 2px solid var(--border-mid);
 }
 .vs-bool-label {
-  font-size: 13px;
+  font-size: var(--text-label);
   color: var(--text-secondary);
 }
 
@@ -595,7 +595,7 @@ async function handleModify() {
   border: none;
   padding: 6px 14px;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: var(--text-meta);
   font-weight: 500;
   color: var(--text-faint);
   cursor: pointer;
@@ -610,7 +610,7 @@ async function handleModify() {
 .vs-submit {
   align-self: flex-start;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--text-label);
   font-weight: 600;
   color: var(--bg);
   background: var(--accent);

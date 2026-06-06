@@ -345,7 +345,7 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
 }
 
 .pending-banner-label {
-  font-size: 11px;
+  font-size: var(--text-label);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -365,7 +365,7 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
 .pending-clear-film-btn {
   align-self: flex-start;
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: var(--text-meta);
   color: var(--text-faint);
   background: none;
   border: none;
@@ -385,7 +385,7 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
   width: 100%;
   margin-top: 14px;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--text-label);
   font-weight: 600;
   color: var(--bg);
   background: var(--accent);
@@ -404,7 +404,7 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
   display: block;
   text-align: center;
   margin-top: 10px;
-  font-size: 12px;
+  font-size: var(--text-meta);
   color: var(--text-secondary);
   text-decoration: none;
   transition: color 150ms;

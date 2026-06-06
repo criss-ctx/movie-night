@@ -124,7 +124,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 
 .login-error {
   color: var(--danger);
-  font-size: 13px;
+  font-size: var(--text-label);
   margin: -8px 0 0;
   min-height: 16px;
 }
