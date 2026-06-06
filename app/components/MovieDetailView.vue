@@ -159,6 +159,11 @@ const { data: trailerKey } = await useAsyncData(
 const showEmbed = ref(false)
 
 const posterUrl = computed(() => props.movie ? getPosterUrl(props.movie.poster_path, 'w342') : null)
+const backdropUrl = computed(() => props.movie?.backdrop_path ? getPosterUrl(props.movie.backdrop_path, 'w1280') : null)
+
+const appBackdropUrl = useState<string | null>('appBackdropUrl', () => null)
+watch(backdropUrl, (url) => { appBackdropUrl.value = url }, { immediate: true })
+onUnmounted(() => { appBackdropUrl.value = null })
 const title = computed(() => props.movie?.title ?? props.fallbackTitle ?? '')
 const releaseYear = computed(() => props.movie?.release_date?.split('-')[0] ?? (props.fallbackYear ? String(props.fallbackYear) : null))
 
