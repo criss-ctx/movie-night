@@ -1,4 +1,4 @@
-import type { TmdbSearchResponse, TmdbMovieDetail, TmdbDiscoverResponse, TmdbWatchProvidersResponse, TmdbPersonDetail } from '~/types'
+import type { TmdbSearchResponse, TmdbMovieDetail, TmdbDiscoverResponse, TmdbWatchProvidersResponse, TmdbPersonDetail, TmdbVideo } from '~/types'
 
 const POSTER_BASE_URL = 'https://image.tmdb.org/t/p/'
 
@@ -33,10 +33,21 @@ export function useTmdb() {
     return await $fetch<TmdbPersonDetail>(`/api/tmdb/person/${personId}`)
   }
 
+  async function getBestTrailer(tmdbId: number): Promise<string | null> {
+    const data = await $fetch<{ results: TmdbVideo[] }>(`/api/tmdb/videos/${tmdbId}`)
+    const trailers = (data.results ?? []).filter(v => v.site === 'YouTube' && v.type === 'Trailer')
+    const best = trailers.find(v => v.official && v.iso_639_1 === 'fr')
+      ?? trailers.find(v => v.official)
+      ?? trailers.find(v => v.iso_639_1 === 'fr')
+      ?? trailers[0]
+      ?? null
+    return best?.key ?? null
+  }
+
   function getPosterUrl(posterPath: string | null, size: 'w185' | 'w342' | 'w500' | 'original' = 'w342'): string | null {
     if (!posterPath) return null
     return `${POSTER_BASE_URL}${size}${posterPath}`
   }
 
-  return { searchMovies, getMovieDetail, discoverMovies, getPosterUrl, getWatchProviders, getPersonDetail }
+  return { searchMovies, getMovieDetail, discoverMovies, getPosterUrl, getWatchProviders, getPersonDetail, getBestTrailer }
 }

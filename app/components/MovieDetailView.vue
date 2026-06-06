@@ -108,6 +108,31 @@
       <p class="mdv-providers-disclaimer">Netflix non inclus · données JustWatch</p>
     </div>
 
+    <div v-if="trailerKey" class="mdv-trailer">
+      <div class="mdv-trailer-bar">
+        <button class="mdv-trailer-btn" @click="showEmbed = !showEmbed">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+          {{ showEmbed ? 'Masquer' : 'Bande annonce' }}
+        </button>
+        <a
+          :href="`https://www.youtube.com/watch?v=${trailerKey}`"
+          target="_blank" rel="noopener noreferrer"
+          class="mdv-trailer-link"
+        >↗ YouTube</a>
+      </div>
+      <div v-if="showEmbed" class="mdv-trailer-embed">
+        <iframe
+          :src="`https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1`"
+          allow="autoplay; encrypted-media; fullscreen"
+          allowfullscreen
+          class="mdv-trailer-iframe"
+          title="Bande annonce"
+        />
+      </div>
+    </div>
+
     <slot />
 
   </div>
@@ -133,8 +158,14 @@ const props = defineProps<{
   journalMeta?: { name: string | null; date: string } | null
 }>()
 
-const { getPosterUrl } = useTmdb()
+const { getPosterUrl, getBestTrailer } = useTmdb()
 const { openPerson } = usePersonModal()
+
+const { data: trailerKey } = await useAsyncData(
+  `trailer-${props.movie?.id ?? 'none'}`,
+  () => props.movie?.id ? getBestTrailer(props.movie!.id) : Promise.resolve(null)
+)
+const showEmbed = ref(false)
 
 const posterUrl = computed(() => props.movie ? getPosterUrl(props.movie.poster_path, 'w342') : null)
 const title = computed(() => props.movie?.title ?? props.fallbackTitle ?? '')
@@ -562,5 +593,67 @@ function formatDate(dateStr: string) {
   color: var(--text-faint);
   font-style: italic;
   margin: 0;
+}
+
+/* Trailer */
+.mdv-trailer { margin-top: 20px; }
+
+.mdv-trailer-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mdv-trailer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-sm);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms, background 150ms;
+}
+
+@media (hover: hover) {
+  .mdv-trailer-btn:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+    background: var(--surface-raised);
+  }
+}
+
+.mdv-trailer-link {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+@media (hover: hover) {
+  .mdv-trailer-link:hover { color: var(--text-secondary); }
+}
+
+.mdv-trailer-embed {
+  margin-top: 12px;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  background: #000;
+}
+
+.mdv-trailer-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 </style>
