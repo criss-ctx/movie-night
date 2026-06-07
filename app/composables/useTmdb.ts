@@ -44,7 +44,7 @@ export function useTmdb() {
     return best?.key ?? null
   }
 
-  function getPosterUrl(posterPath: string | null, size: 'w185' | 'w342' | 'w500' | 'original' = 'w342'): string | null {
+  function getPosterUrl(posterPath: string | null, size: 'w185' | 'w342' | 'w500' | 'w780' | 'w1280' | 'original' = 'w342'): string | null {
     if (!posterPath) return null
     return `${POSTER_BASE_URL}${size}${posterPath}`
   }

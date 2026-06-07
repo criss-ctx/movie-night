@@ -30,7 +30,7 @@
           <span v-if="originCountry" class="mdv-fact">{{ originCountry }}</span>
         </div>
 
-        <div v-if="movie?.genres?.length || hasWarning || frCertification" class="mdv-genres">
+        <div v-if="movie?.genres?.length || hasWarning || frCertification || movie?.belongs_to_collection" class="mdv-genres">
           <span
             v-if="frCertification"
             class="mdv-cert-badge"
@@ -40,6 +40,7 @@
           >{{ frCertification }}</span>
           <span v-if="hasWarning" class="mdv-genre-warning">⚠ Déconseillé</span>
           <span v-for="genre in movie!.genres" :key="genre.id" class="mdv-genre-tag">{{ genre.name }}</span>
+          <span v-if="movie?.belongs_to_collection" class="mdv-collection-tag">{{ movie.belongs_to_collection.name }}</span>
         </div>
 
         <div v-if="movie && movie.vote_count > 0" class="mdv-rating">
@@ -72,7 +73,7 @@
         </button>
       </div>
 
-      <dl v-if="director || mainCast.length || mainProductionCompanies.length" class="mdv-credits">
+      <dl v-if="director || mainCast.length || mainProductionCompanies.length || movie?.belongs_to_collection" class="mdv-credits">
         <div v-if="director" class="mdv-credit-row">
           <dt>Réalisation</dt>
           <dd>
@@ -91,6 +92,15 @@
         <div v-if="mainProductionCompanies.length" class="mdv-credit-row">
           <dt>Production</dt>
           <dd>{{ mainProductionCompanies.map(c => c.name).join(', ') }}</dd>
+        </div>
+        <div v-if="movie?.belongs_to_collection" class="mdv-credit-row">
+          <dt>Saga</dt>
+          <dd class="mdv-collection-name">
+            {{ movie.belongs_to_collection.name }}
+            <span v-if="collectionPosition" class="mdv-collection-rank">
+              — film {{ collectionPosition }}
+            </span>
+          </dd>
         </div>
       </dl>
 
@@ -130,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TmdbMovieDetail, TmdbWatchProviders } from '~/types'
+import type { TmdbMovieDetail, TmdbWatchProviders, TmdbCollection } from '~/types'
 import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
 
 // type 3 = theatrical release — prioritized to get the relevant certification
@@ -151,6 +161,21 @@ const props = defineProps<{
 
 const { getPosterUrl, getBestTrailer } = useTmdb()
 const { openPerson } = usePersonModal()
+
+const { data: collection } = await useAsyncData<TmdbCollection | null>(
+  `collection-${props.movie?.belongs_to_collection?.id ?? 'none'}`,
+  () => props.movie?.belongs_to_collection
+    ? $fetch<TmdbCollection>(`/api/tmdb/collection/${props.movie.belongs_to_collection.id}`)
+    : Promise.resolve(null)
+)
+
+const collectionPosition = computed<string | null>(() => {
+  if (!props.movie?.id || !collection.value) return null
+  const sorted = [...collection.value.parts].sort((a, b) => a.release_date.localeCompare(b.release_date))
+  const idx = sorted.findIndex(m => m.id === props.movie!.id)
+  if (idx === -1) return null
+  return `${idx + 1} / ${sorted.length}`
+})
 
 const { data: trailerKey } = await useAsyncData(
   `trailer-${props.movie?.id ?? 'none'}`,
@@ -201,7 +226,7 @@ const displayedOverview = computed(() => {
 })
 
 function formatDate(dateStr: string) {
-  const [y, m, d] = dateStr.split('-').map(Number)
+  const [y = 0, m = 0, d = 0] = dateStr.split('-').map(Number)
   return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 </script>
@@ -480,6 +505,26 @@ function formatDate(dateStr: string) {
 .mdv-cast-sep {
   color: var(--text);
   font-size: var(--text-label);
+}
+
+.mdv-collection-name {
+  font-style: italic;
+}
+
+.mdv-collection-rank {
+  font-style: normal;
+  color: var(--text-faint);
+}
+
+.mdv-collection-tag {
+  font-size: var(--text-meta);
+  font-weight: 500;
+  font-style: italic;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 999px;
+  padding: 2px 8px;
 }
 
 .mdv-journal-meta {
