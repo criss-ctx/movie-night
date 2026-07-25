@@ -103,6 +103,18 @@ export interface TmdbMovieDetail {
   release_dates?: {
     results: TmdbReleaseDatesEntry[]
   }
+  belongs_to_collection: {
+    id: number
+    name: string
+    poster_path: string | null
+    backdrop_path: string | null
+  } | null
+}
+
+export interface TmdbCollection {
+  id: number
+  name: string
+  parts: { id: number; release_date: string }[]
 }
 
 export interface TmdbProvider {

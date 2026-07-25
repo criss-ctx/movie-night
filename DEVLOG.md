@@ -30,7 +30,7 @@ Ce fichier retrace l'ensemble des réflexions, décisions, planifications et cha
 | Votes & notes (système complet) | ✅ |
 | Page stats (4ème onglet) | ⬜ Session dédiée |
 | Rappel email non-votants (Resend) | ⬜ Déféré |
-| Collections / sagas TMDB | ⬜ |
+| Collections / sagas TMDB | ✅ |
 | Films similaires TMDB | ⬜ |
 
 ---

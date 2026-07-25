@@ -7,7 +7,17 @@ Run these commands in parallel:
 - `git diff HEAD` — full diff of staged and unstaged changes
 - `git log --oneline -8` — recent commit history to match style and scope
 
-## 2. Update memory
+## 2. Code review
+
+Read every changed file in full and check for:
+- **Correctness** — logic errors, edge cases not handled, wrong conditions
+- **DRY / cleanliness** — duplicated logic, dead code, unused imports or variables
+- **TypeScript** — type mismatches, unsafe `any`, missing nullability guards
+- **Security** — no secrets or credentials in code, no injection risks
+
+If you find issues, fix them before proceeding. If a fix is non-trivial, describe what you changed and why.
+
+## 3. Update memory
 
 Based on what you find, update the project memory at `/home/ice/.claude/projects/-home-ice-projects-movie-night/memory/`:
 - If new features were built, update or create the relevant project memory file and update `MEMORY.md`
@@ -16,13 +26,13 @@ Based on what you find, update the project memory at `/home/ice/.claude/projects
 - If the next steps have changed, update `project_next_steps.md`
 - Only update memory for things that are non-obvious or wouldn't be derivable from reading the code
 
-## 3. Update tracking files
+## 4. Update tracking files
 
 Check if any of these files need updating based on the changes:
-- `PLAN_AUTH_IDENTITES.md` — if auth/identity work was done
-- Any other `PLAN_*.md` files at the root — mark completed steps, update status
+- `DEVLOG.md` — add a row in the feature status table if a new feature is complete; add a note in the relevant section if something significant changed
+- `NOTES.md` — if any architectural decision or open question was resolved
 
-## 4. Output (in English)
+## 5. Output (in English)
 
 Finally, output the following clearly formatted:
 

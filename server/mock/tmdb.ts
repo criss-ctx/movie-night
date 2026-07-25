@@ -19,7 +19,8 @@ export const mockMovieDetails: Record<number, TmdbMovieDetail> = {
       { id: 878, name: 'Science-Fiction' },
       { id: 12, name: 'Aventure' }
     ],
-    status: 'Released'
+    status: 'Released',
+    belongs_to_collection: null
   },
   155: {
     id: 155,
@@ -39,7 +40,8 @@ export const mockMovieDetails: Record<number, TmdbMovieDetail> = {
       { id: 80, name: 'Crime' },
       { id: 18, name: 'Drame' }
     ],
-    status: 'Released'
+    status: 'Released',
+    belongs_to_collection: { id: 263, name: 'The Dark Knight Collection', poster_path: null, backdrop_path: null }
   },
   329: {
     id: 329,
@@ -58,7 +60,8 @@ export const mockMovieDetails: Record<number, TmdbMovieDetail> = {
       { id: 12, name: 'Aventure' },
       { id: 878, name: 'Science-Fiction' }
     ],
-    status: 'Released'
+    status: 'Released',
+    belongs_to_collection: { id: 330, name: 'Jurassic Park Collection', poster_path: null, backdrop_path: null }
   }
 }
 
@@ -118,7 +121,8 @@ const DEFAULT_MOCK_MOVIE: TmdbMovieDetail = {
   vote_count: 1000,
   popularity: 50.0,
   genres: [{ id: 99, name: 'Mock' }],
-  status: 'Released'
+  status: 'Released',
+  belongs_to_collection: null
 }
 
 export function getMockMovieDetail(id: number): TmdbMovieDetail {
