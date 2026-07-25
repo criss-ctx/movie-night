@@ -32,6 +32,7 @@ Ce fichier retrace l'ensemble des réflexions, décisions, planifications et cha
 | Rappel email non-votants (Resend) | ⬜ Déféré |
 | Collections / sagas TMDB | ✅ |
 | Films similaires TMDB | ⬜ |
+| Joker wildcard — tirage au sort | ✅ |
 
 ---
 
