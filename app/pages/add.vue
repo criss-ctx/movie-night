@@ -31,12 +31,28 @@
         >
           <p class="pending-banner-label">Tirage en attente</p>
           <p class="pending-banner-info">
-            {{ pendingDraw.profiles?.name ?? '?' }} · {{ pendingDraw.year }}<template v-if="pendingMovie?.title"> · {{ pendingMovie.title }}</template><template v-else-if="pendingDraw.movie_chosen"> · Film choisi</template>
+            {{ pendingDraw.profiles?.name ?? '?' }} · {{ pendingDrawLabel }}<template v-if="pendingMovie?.title"> · {{ pendingMovie.title }}</template><template v-else-if="pendingDraw.movie_chosen"> · Film choisi</template>
           </p>
           <button v-if="pendingMovie" type="button" class="pending-clear-film-btn" @click.stop="handleClearFilm">retirer ce film</button>
           <button v-else-if="pendingDraw.movie_chosen && isAdmin" type="button" class="pending-clear-film-btn" @click.stop="handleClearFilm">annuler le choix</button>
-          <button type="button" class="pending-btn-primary" @click.stop="prefillFromPendingDraw">Pré-remplir le formulaire</button>
-          <NuxtLink :to="`/discover/${pendingDraw.year}`" class="pending-link-secondary">Explorer les films →</NuxtLink>
+          <button v-if="pendingDraw.year" type="button" class="pending-btn-primary" @click.stop="prefillFromPendingDraw">Pré-remplir le formulaire</button>
+          <NuxtLink v-if="pendingDraw.year" :to="`/discover/${pendingDraw.year}`" class="pending-link-secondary">Explorer les films →</NuxtLink>
+          <NuxtLink v-else-if="pendingDraw.kind === 'cinema'" to="/discover/cinema" class="pending-link-secondary">Explorer les films →</NuxtLink>
+          <div v-else class="pending-joker-picker" @click.stop @touchstart.stop>
+            <input
+              v-model.number="jokerYearInput"
+              type="number"
+              :min="MIN_YEAR"
+              :max="MAX_YEAR"
+              :placeholder="`${MIN_YEAR}–${MAX_YEAR}`"
+              class="pending-joker-input"
+            />
+            <NuxtLink
+              v-if="jokerYearValid"
+              :to="`/discover/${jokerYearInput}`"
+              class="pending-link-secondary pending-joker-link"
+            >Explorer {{ jokerYearInput }} →</NuxtLink>
+          </div>
         </div>
       </div>
 
@@ -100,6 +116,7 @@
 <script setup lang="ts">
 import type { TmdbMovie } from '~/types'
 import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
+import { MIN_YEAR, MAX_YEAR } from '~/constants/years'
 
 const router = useRouter()
 
@@ -109,6 +126,17 @@ const { pendingDraw, pendingMovie, load: loadPendingDraw, remove: deletePendingD
 const { requireAuth, user } = useAuth()
 
 const isAdmin = computed(() => profiles.value.find(p => p.user_id === user.value?.id)?.is_admin ?? false)
+
+const pendingDrawLabel = computed(() => {
+  if (!pendingDraw.value) return ''
+  if (pendingDraw.value.year) return String(pendingDraw.value.year)
+  return pendingDraw.value.kind === 'joker' ? 'JOKER' : 'CINEMA'
+})
+
+const jokerYearInput = ref<number | null>(null)
+const jokerYearValid = computed(() =>
+  jokerYearInput.value !== null && jokerYearInput.value >= MIN_YEAR && jokerYearInput.value <= MAX_YEAR
+)
 const { confirm } = useConfirm()
 const { searchMovies } = useTmdb()
 
@@ -161,7 +189,7 @@ function selectMovie(movie: TmdbMovie) {
 }
 
 function prefillFromPendingDraw() {
-  if (!pendingDraw.value) return
+  if (!pendingDraw.value?.year) return
   form.release_year = pendingDraw.value.year
   form.profile_id = pendingDraw.value.profile_id ?? ''
   form.watch_date = new Date().toISOString().split('T')[0] ?? ''
@@ -412,6 +440,34 @@ await Promise.all([loadProfiles(), loadPendingDraw()])
 
 @media (hover: hover) {
   .pending-link-secondary:hover { color: var(--text); }
+}
+
+.pending-joker-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.pending-joker-input {
+  width: 11ch;
+  font-family: var(--font-ui);
+  font-size: var(--text-meta);
+  text-align: center;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-sm);
+  padding: 6px 4px;
+}
+
+.pending-joker-input::-webkit-outer-spin-button,
+.pending-joker-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.pending-joker-input[type=number] { -moz-appearance: textfield; }
+
+.pending-joker-link {
+  margin-top: 0;
 }
 
 .journal-form {

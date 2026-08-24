@@ -14,7 +14,7 @@
       <template v-else-if="movie">
         <MovieDetailView :movie="movie" :providers="providers">
           <button
-            v-if="pendingDraw && (Number(releaseYear) === pendingDraw.year || isChosen)"
+            v-if="canChoose"
             class="choose-btn"
             :class="{ 'choose-btn--chosen': isChosen }"
             @click="handleChoose"
@@ -35,7 +35,7 @@ import type { TmdbMovieDetail, TmdbWatchProvidersResponse } from '~/types'
 const router = useRouter()
 const route = useRoute()
 const { getMovieDetail, getWatchProviders } = useTmdb()
-const { pendingDraw, pendingMovie, load: loadPendingDraw, setFilm, clearFilm } = usePendingDraw()
+const { pendingMovie, load: loadPendingDraw, setFilm, clearFilm, canChooseFilm } = usePendingDraw()
 const { requireAuth } = useAuth()
 
 const { data: movie, pending } = await useAsyncData<TmdbMovieDetail>(
@@ -52,13 +52,17 @@ const providers = computed(() => watchProvidersData.value?.results?.['FR'] ?? nu
 const releaseYear = computed(() => movie.value?.release_date?.split('-')[0] ?? null)
 const isChosen = computed(() => pendingMovie.value?.tmdb_id === movie.value?.id)
 
+const canChoose = computed(() =>
+  movie.value ? canChooseFilm(movie.value.id, Number(releaseYear.value)) : false
+)
+
 async function handleChoose() {
-  if (!movie.value) return
+  if (!movie.value || !releaseYear.value) return
   await requireAuth(async () => {
     if (isChosen.value) {
       await clearFilm()
     } else {
-      await setFilm(movie.value!.id, movie.value!.title)
+      await setFilm(movie.value!.id, movie.value!.title, Number(releaseYear.value))
     }
   })
 }

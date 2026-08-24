@@ -16,10 +16,11 @@ export function usePendingDraw() {
     pendingDraw.value = (data as PendingDraw) ?? null
   }
 
-  async function save(profileId: number, year: number) {
+  async function save(profileId: number, kind: 'year' | 'joker' | 'cinema', year: number | null = null) {
     await supabase.from('pending_draw').delete().gte('id', 1)
     const { error } = await supabase.from('pending_draw').insert({
       profile_id: profileId,
+      kind,
       year,
       drawn_at: new Date().toISOString().split('T')[0]
     })
@@ -27,7 +28,7 @@ export function usePendingDraw() {
     return { error }
   }
 
-  async function setFilm(tmdbId: number, title: string) {
+  async function setFilm(tmdbId: number, title: string, year: number) {
     if (!pendingDraw.value) return
     await supabase
       .from('pending_movie')
@@ -44,7 +45,8 @@ export function usePendingDraw() {
       })
 
     if (!error) {
-      await supabase.from('pending_draw').update({ movie_chosen: true }).eq('id', pendingDraw.value.id)
+      // Also finalizes the year for joker/cinema draws, where it was deferred until now
+      await supabase.from('pending_draw').update({ movie_chosen: true, year }).eq('id', pendingDraw.value.id)
       await load()
     }
     return { error }
@@ -70,5 +72,16 @@ export function usePendingDraw() {
     pendingDraw.value = null
   }
 
-  return { pendingDraw, pendingMovie, load, save, setFilm, clearFilm, remove }
+  // Can a film with this year be chosen from wherever we're browsing right now?
+  // Already-chosen film can always be un-chosen; otherwise the draw must still be
+  // open (no film chosen yet) and either have a deferred year (joker/cinema) or
+  // match the year being browsed.
+  function canChooseFilm(tmdbId: number, year: number): boolean {
+    if (!pendingDraw.value) return false
+    if (pendingMovie.value?.tmdb_id === tmdbId) return true
+    if (pendingDraw.value.movie_chosen) return false
+    return pendingDraw.value.year === null || pendingDraw.value.year === year
+  }
+
+  return { pendingDraw, pendingMovie, load, save, setFilm, clearFilm, remove, canChooseFilm }
 }

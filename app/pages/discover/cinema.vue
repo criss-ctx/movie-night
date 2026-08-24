@@ -9,17 +9,7 @@
         Retour
       </button>
 
-      <h2 class="slide-heading">Films de {{ year }}</h2>
-
-      <div class="discover-filters" role="group" aria-label="Filtres">
-        <button
-          v-for="filter in filters"
-          :key="filter.key"
-          class="discover-filter-btn"
-          :class="{ 'discover-filter-btn--active': activeFilter.key === filter.key }"
-          @click="setFilter(filter)"
-        >{{ filter.label }}</button>
-      </div>
+      <h2 class="slide-heading">Films en salle</h2>
 
       <div v-if="pending && movies.length === 0" class="movie-loading">Chargement…</div>
 
@@ -62,7 +52,7 @@
               aria-label="Déjà vu"
             >vu</span>
             <button
-              v-if="canChooseFilm(movie.id, year)"
+              v-if="canChooseHere(movie)"
               class="card-choose-btn"
               :class="{ 'card-choose-btn--chosen': pendingMovie?.tmdb_id === movie.id }"
               :title="pendingMovie?.tmdb_id === movie.id ? 'Film sélectionné' : 'Choisir ce film'"
@@ -91,7 +81,6 @@ import type { TmdbMovie, TmdbDiscoverResponse } from '~/types'
 import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
 
 interface DiscoverCache {
-  filterKey: string
   movies: TmdbMovie[]
   page: number
   totalPages: number
@@ -107,29 +96,10 @@ await Promise.all([loadPendingDraw(), loadJournal()])
 const watchedTmdbIds = computed(() => new Set(journalEntries.value.map(e => e.tmdb_id).filter(Boolean)))
 
 const router = useRouter()
-const route = useRoute()
 const { discoverMovies, getPosterUrl } = useTmdb()
 
-const year = Number(route.params.year)
+const cache = useState<DiscoverCache | null>('discoverCache-cinema', () => null)
 
-const filters = [
-  { key: 'popular',   label: 'Populaires',      sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: undefined,  with_original_language: undefined },
-  { key: 'top_rated', label: 'Mieux notés',      sort_by: 'vote_average.desc', vote_count_gte: 100,       vote_average_gte: undefined, with_genres: undefined,  with_original_language: undefined },
-  { key: 'revenue',   label: 'Box-office',       sort_by: 'revenue.desc',      vote_count_gte: undefined, vote_average_gte: undefined, with_genres: undefined,  with_original_language: undefined },
-  { key: 'gems',      label: 'Pépites',          sort_by: 'vote_average.desc', vote_count_gte: 20,        vote_average_gte: 7,         with_genres: undefined,  with_original_language: undefined },
-  { key: 'french',    label: 'Films français',   sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: undefined,  with_original_language: 'fr' },
-  { key: 'action',    label: 'Action',           sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '28',       with_original_language: undefined },
-  { key: 'thriller',  label: 'Thriller',         sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '53',       with_original_language: undefined },
-  { key: 'scifi',     label: 'Sci-fi',           sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '878',      with_original_language: undefined },
-  { key: 'drama',     label: 'Drame',            sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '18',       with_original_language: undefined },
-  { key: 'comedy',    label: 'Comédie',          sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '35',       with_original_language: undefined },
-]
-
-const cache = useState<DiscoverCache | null>(`discoverCache-${year}`, () => null)
-
-const activeFilter = ref(
-  cache.value ? filters.find(f => f.key === cache.value!.filterKey) ?? filters[0] : filters[0]
-)
 const page = ref(cache.value?.page ?? 1)
 const totalPages = ref(cache.value?.totalPages ?? 1)
 const movies = ref<TmdbMovie[]>(cache.value?.movies ?? [])
@@ -137,23 +107,14 @@ const loadingMore = ref(false)
 const sentinel = ref<HTMLElement | null>(null)
 const scrollContainer = ref<HTMLElement | null>(null)
 
-const { data, pending, refresh } = await useAsyncData<TmdbDiscoverResponse>(
-  `discover-${year}`,
-  () => discoverMovies({
-    year,
-    sort_by: activeFilter.value.sort_by,
-    with_genres: activeFilter.value.with_genres,
-    vote_count_gte: activeFilter.value.vote_count_gte,
-    vote_average_gte: activeFilter.value.vote_average_gte,
-    with_original_language: activeFilter.value.with_original_language,
-    page: 1,
-  }),
+const { data, pending } = await useAsyncData<TmdbDiscoverResponse>(
+  'discover-cinema',
+  () => discoverMovies({ mode: 'cinema', page: 1 }),
   { immediate: !cache.value }
 )
 
 function syncCache() {
   cache.value = {
-    filterKey: activeFilter.value.key,
     movies: movies.value,
     page: page.value,
     totalPages: totalPages.value,
@@ -180,25 +141,11 @@ onBeforeRouteLeave(() => {
   if (cache.value) cache.value.scrollTop = scrollContainer.value?.scrollTop ?? 0
 })
 
-async function setFilter(filter: typeof filters[0]) {
-  activeFilter.value = filter
-  movies.value = []
-  await refresh()
-}
-
 async function loadMore() {
   if (loadingMore.value || page.value >= totalPages.value) return
   loadingMore.value = true
   page.value++
-  const more = await discoverMovies({
-    year,
-    sort_by: activeFilter.value.sort_by,
-    with_genres: activeFilter.value.with_genres,
-    vote_count_gte: activeFilter.value.vote_count_gte,
-    vote_average_gte: activeFilter.value.vote_average_gte,
-    with_original_language: activeFilter.value.with_original_language,
-    page: page.value,
-  })
+  const more = await discoverMovies({ mode: 'cinema', page: page.value })
   movies.value = [...movies.value, ...more.results]
   loadingMore.value = false
   syncCache()
@@ -232,12 +179,18 @@ function toggleWarning(movieId: number) {
   }
 }
 
+function canChooseHere(movie: TmdbMovie): boolean {
+  return canChooseFilm(movie.id, Number(movie.release_date?.split('-')[0]))
+}
+
 async function toggleFilm(movie: TmdbMovie) {
+  const releaseYear = Number(movie.release_date?.split('-')[0])
+  if (!releaseYear) return
   await requireAuth(async () => {
     if (pendingMovie.value?.tmdb_id === movie.id) {
       await clearFilm()
     } else {
-      await setFilm(movie.id, movie.title, year)
+      await setFilm(movie.id, movie.title, releaseYear)
     }
   })
 }
@@ -259,54 +212,8 @@ async function toggleFilm(movie: TmdbMovie) {
   margin: 0 auto;
 }
 
-.discover-filters {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  margin-bottom: 20px;
-  scrollbar-width: none;
-}
-
-.discover-filters::-webkit-scrollbar {
-  display: none;
-}
-
-@media (hover: hover) {
-  .discover-filters {
-    flex-wrap: wrap;
-    overflow-x: visible;
-  }
-}
-
-.discover-filter-btn {
-  flex-shrink: 0;
-  font-family: var(--font-ui);
-  font-size: 0.85rem;
-  padding: 6px 14px;
-  min-height: 34px;
-  border: 1px solid var(--border-mid);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: border-color 150ms, color 150ms, background 150ms;
-}
-
-.discover-filter-btn--active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: rgba(201, 165, 90, 0.08);
-}
-
-@media (hover: hover) {
-  .discover-filter-btn:not(.discover-filter-btn--active):hover {
-    border-color: var(--border-strong);
-    color: var(--text);
-  }
-}
-
 .discover-grid {
+  margin-top: 20px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
