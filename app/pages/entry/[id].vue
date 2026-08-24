@@ -161,8 +161,13 @@
                 </div>
               </div>
 
-              <button class="vs-submit" @click="handleSubmitVote">
-                {{ myVote ? 'Mettre à jour' : 'Envoyer mon vote' }}
+              <button
+                class="vs-submit"
+                :class="{ saved: justSaved }"
+                :disabled="isSubmitting"
+                @click="handleSubmitVote"
+              >
+                {{ justSaved ? '✓ Enregistré' : myVote ? 'Mettre à jour' : 'Envoyer mon vote' }}
               </button>
             </div>
           </template>
@@ -285,12 +290,24 @@ function getVote(profileId: number): Vote | undefined {
   return votes.value.find(v => v.profile_id === profileId)
 }
 
+const isSubmitting = ref(false)
+const justSaved = ref(false)
+
 async function handleSubmitVote() {
-  if (!myProfile.value) return
-  await requireAuth(async () => {
-    const { error } = await castVote(entryId, myProfile.value!.id, { ...draft })
-    if (!error) votes.value = await loadVotes(entryId)
-  })
+  if (!myProfile.value || isSubmitting.value) return
+  isSubmitting.value = true
+  try {
+    await requireAuth(async () => {
+      const { error } = await castVote(entryId, myProfile.value!.id, { ...draft })
+      if (!error) {
+        votes.value = await loadVotes(entryId)
+        justSaved.value = true
+        setTimeout(() => { justSaved.value = false }, 1800)
+      }
+    })
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 async function handleModify() {
@@ -618,9 +635,16 @@ async function handleModify() {
   border-radius: var(--r-sm);
   padding: 9px 20px;
   cursor: pointer;
-  transition: opacity 150ms;
+  transition: opacity 150ms, background-color 150ms;
+}
+.vs-submit:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.vs-submit.saved {
+  background: var(--success, #2e9e5b);
 }
 @media (hover: hover) {
-  .vs-submit:hover { opacity: 0.85; }
+  .vs-submit:hover:not(:disabled) { opacity: 0.85; }
 }
 </style>

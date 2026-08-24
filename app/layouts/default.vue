@@ -44,6 +44,17 @@
         </button>
       </div>
     </header>
+    <div class="ptr-zone" :style="{ height: pullDistance + 'px' }" aria-hidden="true">
+      <svg
+        class="ptr-icon"
+        :class="{ spinning: isRefreshing }"
+        :style="{ opacity: Math.min(1, pullDistance / threshold), transform: `rotate(${pullDistance * 2.5}deg)` }"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+      >
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+    </div>
     <main class="app-content">
       <div v-if="appBackdropUrl" class="app-backdrop" aria-hidden="true">
         <img :src="appBackdropUrl" alt="" class="app-backdrop-img" />
@@ -96,6 +107,7 @@ const appBackdropUrl = useState<string | null>('appBackdropUrl', () => null)
 const { user, signOut, showLoginModal } = useAuth()
 const { theme, toggle, init } = useTheme()
 const { profiles } = useProfiles()
+const { pullDistance, isRefreshing, threshold } = usePullToRefresh()
 const currentProfile = computed(() => {
   const uid = user.value ? ((user.value as any).sub ?? user.value.id) : null
   return uid ? profiles.value.find(p => p.user_id === uid) ?? null : null
@@ -107,6 +119,29 @@ onMounted(init)
 <style scoped>
 .app-content {
   isolation: isolate;
+}
+
+.ptr-zone {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: height 180ms ease-out;
+}
+
+.ptr-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--text-faint);
+}
+
+.ptr-icon.spinning {
+  animation: ptr-spin 700ms linear infinite;
+}
+
+@keyframes ptr-spin {
+  to { transform: rotate(360deg); }
 }
 
 .app-backdrop {
