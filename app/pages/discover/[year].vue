@@ -1,5 +1,5 @@
 <template>
-  <div class="page-discover">
+  <div ref="scrollContainer" class="page-discover">
     <div class="discover-wrapper">
 
       <button class="movie-back" @click="router.back()">
@@ -90,6 +90,14 @@
 import type { TmdbMovie, TmdbDiscoverResponse } from '~/types'
 import { TMDB_WARNING_GENRES } from '~/constants/tmdb'
 
+interface DiscoverCache {
+  filterKey: string
+  movies: TmdbMovie[]
+  page: number
+  totalPages: number
+  scrollTop: number
+}
+
 const { pendingDraw, pendingMovie, load: loadPendingDraw, setFilm, clearFilm } = usePendingDraw()
 const { entries: journalEntries, load: loadJournal } = useJournal()
 const { requireAuth } = useAuth()
@@ -117,12 +125,17 @@ const filters = [
   { key: 'comedy',    label: 'Comédie',          sort_by: 'popularity.desc',   vote_count_gte: undefined, vote_average_gte: undefined, with_genres: '35',       with_original_language: undefined },
 ]
 
-const activeFilter = ref(filters[0])
-const page = ref(1)
-const totalPages = ref(1)
-const movies = ref<TmdbMovie[]>([])
+const cache = useState<DiscoverCache | null>(`discoverCache-${year}`, () => null)
+
+const activeFilter = ref(
+  cache.value ? filters.find(f => f.key === cache.value!.filterKey) ?? filters[0] : filters[0]
+)
+const page = ref(cache.value?.page ?? 1)
+const totalPages = ref(cache.value?.totalPages ?? 1)
+const movies = ref<TmdbMovie[]>(cache.value?.movies ?? [])
 const loadingMore = ref(false)
 const sentinel = ref<HTMLElement | null>(null)
+const scrollContainer = ref<HTMLElement | null>(null)
 
 const { data, pending, refresh } = await useAsyncData<TmdbDiscoverResponse>(
   `discover-${year}`,
@@ -134,15 +147,38 @@ const { data, pending, refresh } = await useAsyncData<TmdbDiscoverResponse>(
     vote_average_gte: activeFilter.value.vote_average_gte,
     with_original_language: activeFilter.value.with_original_language,
     page: 1,
-  })
+  }),
+  { immediate: !cache.value }
 )
+
+function syncCache() {
+  cache.value = {
+    filterKey: activeFilter.value.key,
+    movies: movies.value,
+    page: page.value,
+    totalPages: totalPages.value,
+    scrollTop: cache.value?.scrollTop ?? 0,
+  }
+}
 
 watch(data, (val) => {
   if (!val) return
   movies.value = val.results
   totalPages.value = val.total_pages
   page.value = 1
+  syncCache()
 }, { immediate: true })
+
+onMounted(() => {
+  if (cache.value?.scrollTop && scrollContainer.value) {
+    nextTick(() => { scrollContainer.value!.scrollTop = cache.value!.scrollTop })
+  }
+})
+
+onBeforeRouteLeave(() => {
+  syncCache()
+  if (cache.value) cache.value.scrollTop = scrollContainer.value?.scrollTop ?? 0
+})
 
 async function setFilter(filter: typeof filters[0]) {
   activeFilter.value = filter
@@ -165,6 +201,7 @@ async function loadMore() {
   })
   movies.value = [...movies.value, ...more.results]
   loadingMore.value = false
+  syncCache()
 }
 
 let observer: IntersectionObserver | null = null
