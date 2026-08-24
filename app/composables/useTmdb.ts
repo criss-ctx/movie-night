@@ -10,7 +10,8 @@ export function useTmdb() {
   }
 
   async function discoverMovies(params: {
-    year: number
+    year?: number
+    mode?: 'cinema'
     sort_by?: string
     with_genres?: string
     vote_count_gte?: number

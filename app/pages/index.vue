@@ -17,26 +17,20 @@
     </div>
 
     <div class="picker-center">
-      <button class="glowing-btn" @click="drawYear">
+      <button class="glowing-btn" :disabled="!selectedProfileId" @click="drawYear">
         <span class="glowing-txt">G<span class="faulty-letter">O</span></span>
       </button>
 
       <div class="result-zone">
-        <div v-if="!(isJoker && yearRevealed)" class="result-display-wrapper">
+        <div class="result-display-wrapper" v-show="!cinemaActive">
           <p ref="resultDisplay" class="result-display"></p>
         </div>
-        <div v-else class="joker-picker">
-          <span class="joker-picker-label">Choisis ton année</span>
-          <div class="year-input-frame" :class="{ 'year-input-frame--valid': jokerYearValid }">
-            <input
-              v-model.number="jokerYear"
-              type="number"
-              :min="MIN_YEAR"
-              :max="MAX_YEAR"
-              class="joker-year-input"
-            />
-          </div>
-          <span class="joker-year-hint">{{ MIN_YEAR }} – {{ MAX_YEAR }}</span>
+        <div ref="filmstrip" class="filmstrip" v-show="cinemaActive">
+          <div class="projector-flare"></div>
+          <div class="frame" data-letter="C"><span class="frame-glyph"></span></div>
+          <div class="frame" data-letter="I"><span class="frame-glyph"></span></div>
+          <div class="frame" data-letter="N"><span class="frame-glyph"></span></div>
+          <div class="frame" data-letter="É"><span class="frame-glyph"></span></div>
         </div>
       </div>
     </div>
@@ -45,23 +39,30 @@
       <button
         v-if="showMemorize"
         class="memoriser-btn"
-        :disabled="!canMemorize"
+        :disabled="!showMemorize"
         @click="handleMemorize"
       >Mémoriser ce tirage</button>
 
       <NuxtLink
-        v-if="yearRevealed && effectiveYear"
-        :to="`/discover/${effectiveYear}`"
+        v-if="justMemorized && outcomeKind === 'year' && lastDrawnYear"
+        :to="`/discover/${lastDrawnYear}`"
         class="discover-btn"
-      >Découvrir les films de {{ effectiveYear }}</NuxtLink>
+      >Découvrir les films de {{ lastDrawnYear }}</NuxtLink>
+
+      <NuxtLink
+        v-if="justMemorized && outcomeKind === 'cinema'"
+        to="/discover/cinema"
+        class="discover-btn"
+      >Voir les films en salle →</NuxtLink>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const MIN_YEAR = 1970
-const MAX_YEAR = new Date().getFullYear() - 1
+import { MIN_YEAR, MAX_YEAR } from '~/constants/years'
+
 const JOKER_PROBABILITY = 0.1
+const CINEMA_PROBABILITY = 0.065
 
 const { profiles, load: loadProfiles } = useProfiles()
 const { load: loadJournal, pickedYears, lastChooser } = useJournal()
@@ -73,41 +74,46 @@ const selectedProfileId = ref<number | null>(null)
 
 
 const lastDrawnYear = ref<number | null>(null)
-const isJoker = ref(false)
-const jokerYear = ref<number | null>(null)
+const outcomeKind = ref<'year' | 'joker' | 'cinema'>('year')
 const yearRevealed = ref(false)
 const resultDisplay = ref<HTMLElement | null>(null)
 const pickerActions = ref<HTMLElement | null>(null)
+const filmstrip = ref<HTMLElement | null>(null)
+const cinemaActive = ref(false)
 
-const jokerYearValid = computed(() =>
-  jokerYear.value !== null && jokerYear.value >= MIN_YEAR && jokerYear.value <= MAX_YEAR
-)
-
-const effectiveYear = computed(() => isJoker.value ? jokerYear.value : lastDrawnYear.value)
+const justMemorized = ref(false)
 
 const showMemorize = computed(() => {
   if (!yearRevealed.value || pendingDraw.value || !selectedProfileId.value) return false
-  return isJoker.value || lastDrawnYear.value !== null
+  return outcomeKind.value !== 'year' || lastDrawnYear.value !== null
 })
 
-const canMemorize = computed(() =>
-  showMemorize.value && (!isJoker.value || jokerYearValid.value)
-)
-
 function drawYear() {
+  if (!selectedProfileId.value) return
   const total = MAX_YEAR - MIN_YEAR + 1
-  isJoker.value = false
-  jokerYear.value = null
   yearRevealed.value = false
+  justMemorized.value = false
+  cinemaActive.value = false
+  filmstrip.value?.classList.remove('flaring')
+  resultDisplay.value?.classList.remove('result-display--long')
 
-  if (Math.random() < JOKER_PROBABILITY) {
-    isJoker.value = true
+  const roll = Math.random()
+  if (roll < JOKER_PROBABILITY) {
+    outcomeKind.value = 'joker'
     lastDrawnYear.value = null
     const visualYear = Math.round(Math.random() * (MAX_YEAR - MIN_YEAR) + MIN_YEAR)
-    animateDigits(visualYear, () => setTimeout(revealJoker, 1500))
+    animateDigits(visualYear, () => setTimeout(() => revealOutcome('JOKER'), 1500))
+    return
+  }
+  if (roll < JOKER_PROBABILITY + CINEMA_PROBABILITY) {
+    outcomeKind.value = 'cinema'
+    lastDrawnYear.value = null
+    const visualYear = Math.round(Math.random() * (MAX_YEAR - MIN_YEAR) + MIN_YEAR)
+    animateDigits(visualYear, () => setTimeout(revealCinema, 1500))
     return
   }
 
+  outcomeKind.value = 'year'
   let year: number
   if (pickedYears.value.length >= total) {
     year = MIN_YEAR - 1
@@ -152,7 +158,7 @@ function animateDigits(year: number, onReveal: () => void) {
     ? digits
     : (() => {
         const fake = String(generateFakeYear(year)).split('')
-        if (scenario === 2) fake[3] = digits[3] // last digit was "right" all along
+        if (scenario === 2) fake[3] = digits[3]! // last digit was "right" all along
         return fake
       })()
 
@@ -165,8 +171,8 @@ function animateDigits(year: number, onReveal: () => void) {
   settleOrder.forEach((digitIndex, order) => {
     setTimeout(() => {
       clearInterval(timers[digitIndex])
-      spans[digitIndex].textContent = phase1Digits[digitIndex]
-      spans[digitIndex].classList.add('settled')
+      spans[digitIndex]!.textContent = phase1Digits[digitIndex]!
+      spans[digitIndex]!.classList.add('settled')
     }, firstSettleMs + order * delayPerDigitMs)
   })
 
@@ -182,16 +188,16 @@ function animateDigits(year: number, onReveal: () => void) {
   rerollOrder.forEach((digitIndex, order) => {
     const startAt = phase1EndMs + pauseMs + order * (rerollMs + rerollGapMs)
     setTimeout(() => {
-      spans[digitIndex].classList.remove('settled')
+      spans[digitIndex]!.classList.remove('settled')
       let elapsed = 0
       const t = setInterval(() => {
         elapsed += rollSpeedMs
         if (elapsed >= rerollMs) {
           clearInterval(t)
-          spans[digitIndex].textContent = digits[digitIndex]
-          spans[digitIndex].classList.add('settled')
+          spans[digitIndex]!.textContent = digits[digitIndex]!
+          spans[digitIndex]!.classList.add('settled')
         } else {
-          spans[digitIndex].textContent = String(Math.floor(Math.random() * 10))
+          spans[digitIndex]!.textContent = String(Math.floor(Math.random() * 10))
         }
       }, rollSpeedMs)
     }, startAt)
@@ -206,24 +212,25 @@ function animateDigits(year: number, onReveal: () => void) {
 
   // Scenario 3 only: the "confirmed" last digit was fake — re-roll it as a final surprise
   setTimeout(() => {
-    spans[3].classList.remove('settled')
+    spans[3]!.classList.remove('settled')
     let elapsed = 0
     const t = setInterval(() => {
       elapsed += rollSpeedMs
       if (elapsed >= rerollMs) {
         clearInterval(t)
-        spans[3].textContent = digits[3]
-        spans[3].classList.add('settled')
+        spans[3]!.textContent = digits[3]!
+        spans[3]!.classList.add('settled')
         onReveal()
       } else {
-        spans[3].textContent = String(Math.floor(Math.random() * 10))
+        spans[3]!.textContent = String(Math.floor(Math.random() * 10))
       }
     }, rollSpeedMs)
   }, phase2EndMs + pauseMs)
 }
 
-function revealJoker() {
+function revealOutcome(text: string) {
   if (!resultDisplay.value) return
+  resultDisplay.value.classList.toggle('result-display--long', text.length > 5)
 
   // Phase 1: each digit bursts with staggered delay for organic chaos
   const spans = Array.from(resultDisplay.value.querySelectorAll('.digit')) as HTMLElement[]
@@ -233,26 +240,71 @@ function revealJoker() {
     span.classList.add('static-bursting')
   })
 
-  // Phase 2: silence, then JOKER is just… there
+  // Phase 2: silence, then the outcome text is just… there
   setTimeout(() => {
     if (!resultDisplay.value) return
-    resultDisplay.value.innerHTML = 'JOKER'.split('').map(l =>
+    resultDisplay.value.innerHTML = text.split('').map(l =>
       `<span class="digit joker-letter">${l}</span>`
     ).join('')
 
     setTimeout(() => {
-      const jokerSpans = Array.from(resultDisplay.value!.querySelectorAll('.digit')) as HTMLElement[]
-      jokerSpans.forEach(span => span.classList.add('settled'))
+      const outcomeSpans = Array.from(resultDisplay.value!.querySelectorAll('.digit')) as HTMLElement[]
+      outcomeSpans.forEach(span => span.classList.add('settled'))
       setTimeout(() => { yearRevealed.value = true }, 2000)
     }, 80)
   }, 620)
 }
 
+function revealCinema() {
+  cinemaActive.value = true
+  nextTick(runFilmstrip)
+}
+
+function runFilmstrip() {
+  if (!filmstrip.value) return
+  const frames = Array.from(filmstrip.value.querySelectorAll('.frame')) as HTMLElement[]
+  const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+  const timers = frames.map(frame => {
+    frame.classList.add('rolling')
+    const glyph = frame.querySelector('.frame-glyph') as HTMLElement
+    return setInterval(() => {
+      glyph.textContent = glyphs[Math.floor(Math.random() * glyphs.length)]!
+    }, 120)
+  })
+
+  // Settle order breaks left-to-right predictability, same spirit as the year-digit roll
+  const settleOrder = [2, 0, 3, 1]
+  const baseDelay = 1100
+  const perFrameGap = 280
+
+  settleOrder.forEach((frameIndex, order) => {
+    setTimeout(() => {
+      clearInterval(timers[frameIndex])
+      const frame = frames[frameIndex]!
+      frame.classList.remove('rolling')
+      const glyph = frame.querySelector('.frame-glyph') as HTMLElement
+      glyph.textContent = frame.dataset.letter ?? ''
+      frame.classList.add('settled')
+    }, baseDelay + order * perFrameGap)
+  })
+
+  const totalMs = baseDelay + settleOrder.length * perFrameGap
+
+  setTimeout(() => filmstrip.value?.classList.add('flaring'), totalMs - 80)
+  setTimeout(() => { yearRevealed.value = true }, totalMs + 400)
+}
+
 async function handleMemorize() {
-  const year = isJoker.value ? jokerYear.value : lastDrawnYear.value
-  if (!year || !selectedProfileId.value) return
+  if (!selectedProfileId.value) return
+  if (outcomeKind.value === 'year' && !lastDrawnYear.value) return
   await requireAuth(async () => {
-    await savePendingDraw(selectedProfileId.value!, year!)
+    const { error } = await savePendingDraw(
+      selectedProfileId.value!,
+      outcomeKind.value,
+      outcomeKind.value === 'year' ? lastDrawnYear.value : null
+    )
+    if (!error) justMemorized.value = true
   })
 }
 
@@ -267,7 +319,7 @@ if (import.meta.client) updateGlowColor()
 watch(theme, updateGlowColor)
 
 const hasPickerActions = computed(() =>
-  showMemorize.value || (yearRevealed.value && !!effectiveYear.value)
+  showMemorize.value || yearRevealed.value
 )
 
 watch(hasPickerActions, (has) => {
@@ -361,6 +413,17 @@ await Promise.all([loadProfiles(), loadJournal(), loadPendingDraw()])
   cursor: pointer;
   min-height: 56px;
   min-width: 120px;
+}
+
+.glowing-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  animation: none;
+}
+
+.glowing-btn:disabled .glowing-txt,
+.glowing-btn:disabled .faulty-letter {
+  animation: none;
 }
 
 .glowing-txt {
@@ -462,6 +525,10 @@ await Promise.all([loadProfiles(), loadJournal(), loadPendingDraw()])
   color: var(--text);
 }
 
+.result-display--long {
+  font-size: clamp(36px, 13vw, 60px);
+}
+
 /* .digit spans are created dynamically via innerHTML — :global() bypasses scoping */
 :global(.result-display .digit) {
   display: inline-block;
@@ -501,6 +568,82 @@ await Promise.all([loadProfiles(), loadJournal(), loadPendingDraw()])
   100% { transform: translate(0,0) scale(1);              color: #fff;              opacity: 0;    text-shadow: none; filter: none; }
 }
 
+.filmstrip {
+  --cinema-glow: 42 90% 62%;
+  position: relative;
+  display: flex;
+  gap: 3px;
+}
+
+.frame {
+  position: relative;
+  width: clamp(44px, 17vw, 66px);
+  height: clamp(63px, 24vw, 95px);
+  background: #0c0a10;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.frame::before,
+.frame::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background-image: radial-gradient(circle, #000 2.2px, transparent 2.3px);
+  background-size: 11.5px 8px;
+  background-position: 2px center;
+  background-repeat: repeat-x;
+  background-color: #1c1822;
+}
+.frame::before { top: 0; }
+.frame::after { bottom: 0; }
+
+.frame-glyph {
+  font-family: var(--font-display);
+  font-size: clamp(27px, 8.5vw, 37px);
+  font-weight: 600;
+  color: var(--text-faint);
+  line-height: 1;
+}
+
+.frame.settled .frame-glyph {
+  color: var(--text);
+  text-shadow: 0 0 10px hsl(var(--cinema-glow)), 0 0 22px hsl(var(--cinema-glow) / 0.6);
+}
+
+.frame.rolling .frame-glyph {
+  animation: glyph-blur 160ms linear infinite;
+}
+
+@keyframes glyph-blur {
+  0%, 100% { filter: blur(0); opacity: 1; }
+  50% { filter: blur(1.5px); opacity: 0.7; }
+}
+
+.projector-flare {
+  position: absolute;
+  inset: -30px -60px;
+  background: linear-gradient(100deg, transparent 30%, hsl(var(--cinema-glow) / 0.55) 48%, transparent 66%);
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.filmstrip.flaring .projector-flare {
+  animation: flare-sweep 550ms ease-out forwards;
+}
+
+@keyframes flare-sweep {
+  0%   { opacity: 0; transform: translateX(-60px); }
+  35%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(60px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .glowing-btn,
   .glowing-txt,
@@ -509,6 +652,10 @@ await Promise.all([loadProfiles(), loadJournal(), loadPendingDraw()])
   }
   .glowing-btn {
     opacity: 1;
+  }
+  .frame-glyph,
+  .projector-flare {
+    animation: none;
   }
 }
 
@@ -594,92 +741,6 @@ await Promise.all([loadProfiles(), loadJournal(), loadPendingDraw()])
     border-color: var(--border-mid);
   }
 }
-
-.joker-picker {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  animation: picker-emerge 0.5s ease-out both;
-}
-
-@keyframes picker-emerge {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.joker-picker-label {
-  font-family: var(--font-ui);
-  font-size: var(--text-meta);
-  font-weight: 400;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.year-input-frame {
-  position: relative;
-  display: inline-flex;
-  padding: 8px 20px;
-}
-
-.year-input-frame::before,
-.year-input-frame::after {
-  content: '';
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-color: var(--glow-color);
-  border-style: solid;
-  opacity: 0.5;
-  transition: opacity 200ms;
-}
-
-.year-input-frame::before {
-  top: 0; left: 0;
-  border-width: 1.5px 0 0 1.5px;
-}
-
-.year-input-frame::after {
-  bottom: 0; right: 0;
-  border-width: 0 1.5px 1.5px 0;
-}
-
-.year-input-frame:focus-within::before,
-.year-input-frame:focus-within::after {
-  opacity: 1;
-}
-
-.year-input-frame--valid::before,
-.year-input-frame--valid::after {
-  opacity: 1;
-  box-shadow: 0 0 6px var(--glow-color);
-}
-
-.joker-year-hint {
-  font-family: var(--font-ui);
-  font-size: var(--text-meta);
-  color: var(--text-faint);
-  letter-spacing: 0.1em;
-}
-
-.joker-year-input {
-  font-family: var(--font-display);
-  font-size: clamp(36px, 10vw, 52px);
-  text-align: center;
-  width: 5ch;
-  background: none;
-  border: none;
-  color: var(--text);
-  outline: none;
-  caret-color: var(--glow-color);
-  letter-spacing: 0.1em;
-  padding: 0;
-}
-
-.joker-year-input::-webkit-outer-spin-button,
-.joker-year-input::-webkit-inner-spin-button { -webkit-appearance: none; }
-.joker-year-input[type=number] { -moz-appearance: textfield; }
 
 .discover-btn {
   font-family: var(--font-ui);

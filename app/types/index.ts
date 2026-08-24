@@ -24,7 +24,8 @@ export interface PendingMovie {
 export interface PendingDraw {
   id: number
   profile_id: number | null
-  year: number
+  year: number | null
+  kind: 'year' | 'joker' | 'cinema'
   drawn_at: string
   movie_chosen: boolean
   profiles: { name: string } | null

@@ -60,20 +60,23 @@ export type Database = {
         Row: {
           id: number
           profile_id: number | null
-          year: number
+          year: number | null
+          kind: 'year' | 'joker' | 'cinema'
           drawn_at: string
           movie_chosen: boolean
           created_at: string
         }
         Insert: {
           profile_id?: number | null
-          year: number
+          year?: number | null
+          kind?: 'year' | 'joker' | 'cinema'
           drawn_at: string
           movie_chosen?: boolean
         }
         Update: {
           profile_id?: number | null
-          year?: number
+          year?: number | null
+          kind?: 'year' | 'joker' | 'cinema'
           drawn_at?: string
           movie_chosen?: boolean
         }
